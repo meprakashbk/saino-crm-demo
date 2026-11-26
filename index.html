@@ -1,0 +1,1186 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Saino Events Studio · Today inbox + Events board (design demo)</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b5a40'/%3E%3Ctext x='32' y='45' font-family='Georgia,serif' font-size='40' text-anchor='middle' fill='%23e0c88a'%3ES%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Jost:wght@400;500;600&display=swap">
+<style>
+/* Saino Studio, Today inbox + Events board. Light by default (all-day use on a phone), dark on request. Gold is decoration; green carries actions. */
+:root{
+  --bg:#f8f4ea;--surface:#fffefa;--sunk:#f0eadb;--ink:#1b3a30;--muted:#52665c;--line:#ddd3bc;--edge:#7d8a80;
+  --pri:#0b5a40;--on-pri:#fffefa;--gold:#c5a059;--goldt:#7a5c14;--bad:#a3271a;--ok:#1d6b3f;--warn:#7a560a;
+  --focus:#0b5a40;--shadow:0 1px 2px #1b3a3014,0 8px 24px #1b3a3012;color-scheme:light;
+  --display:"Cormorant Garamond",Georgia,serif;--body:"Jost",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1c16;--surface:#15281f;--sunk:#0b1612;--ink:#f3eddc;--muted:#b3c3ba;--line:#2f473b;--edge:#6f8a7b;
+  --pri:#e0c88a;--on-pri:#12261d;--gold:#c5a059;--goldt:#e0c88a;--bad:#ffb4a2;--ok:#9fe0b8;--warn:#e8c46a;
+  --focus:#e0c88a;--shadow:0 1px 2px #0006,0 8px 24px #0005;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1c16;--surface:#15281f;--sunk:#0b1612;--ink:#f3eddc;--muted:#b3c3ba;--line:#2f473b;--edge:#6f8a7b;
+  --pri:#e0c88a;--on-pri:#12261d;--gold:#c5a059;--goldt:#e0c88a;--bad:#ffb4a2;--ok:#9fe0b8;--warn:#e8c46a;
+  --focus:#e0c88a;--shadow:0 1px 2px #0006,0 8px 24px #0005;color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scrollbar-gutter:stable}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--body)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
+h1,h2,h3,p{margin:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:-999px;top:8px;background:var(--pri);color:var(--on-pri);padding:10px 14px;border-radius:8px;z-index:100}
+.skip:focus{left:8px}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+svg.i.s{width:18px;height:18px}
+
+/* shell */
+.shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;padding:26px 14px 18px;border-right:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;gap:26px}
+.brand{font:600 30px/1 var(--display);padding:0 10px;letter-spacing:.01em}
+.brand small{display:block;font:500 12px/1.3 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--goldt);margin-top:8px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:12px;min-height:46px;padding:0 12px;border:0;border-radius:10px;background:none;color:var(--muted);font-weight:500;text-align:left}
+.nav button:hover{background:var(--sunk);color:var(--ink)}
+.nav button[aria-current="page"]{background:var(--sunk);color:var(--ink);font-weight:600;box-shadow:inset 3px 0 0 var(--gold)}
+.nav .n{margin-left:auto;font-size:13px;min-width:22px;text-align:center;border-radius:99px;padding:0 7px;background:var(--pri);color:var(--on-pri);font-weight:600}
+.side .foot{margin-top:auto;display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--muted);padding:0 4px}
+.col{min-width:0}
+.bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px;justify-content:flex-end;padding:12px 28px;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px)}
+.bar .brand{display:none;padding:0;margin-right:auto;font-size:26px}
+main{max-width:1120px;margin:0 auto;padding:8px 28px 64px}
+main:focus,main:focus-visible{outline:none}
+.tabbar{display:none}
+
+/* parts */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;border:1.5px solid var(--edge);background:var(--surface);font-weight:500;text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--ink)}
+.btn.pri{background:var(--pri);border-color:var(--pri);color:var(--on-pri);font-weight:600}
+.btn.pri:hover{filter:brightness(1.08)}
+.btn.sm{min-height:40px;padding:0 14px;font-size:15px}
+.btn.quiet{border-color:transparent;background:transparent;color:var(--muted)}
+.btn.quiet:hover{background:var(--sunk);color:var(--ink)}
+.btn[aria-disabled="true"]{opacity:.55;cursor:not-allowed}
+.ib{width:44px;height:44px;display:inline-grid;place-items:center;border-radius:10px;border:1.5px solid var(--edge);background:var(--surface)}
+.ib:hover{border-color:var(--ink)}
+.link{background:none;border:0;padding:0;color:var(--goldt);text-decoration:underline;text-underline-offset:3px;min-height:24px}
+.chip{display:inline-block;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:99px;padding:3px 12px;font-size:13px}
+.chip.demo{border-color:var(--gold);color:var(--goldt);font-weight:500;white-space:nowrap}
+.pill{display:inline-block;border:1px solid currentColor;border-radius:99px;padding:0 10px;font-size:13px;line-height:22px;white-space:nowrap;font-weight:500;background:color-mix(in srgb,currentColor 9%,transparent)}
+.pill.ok{color:var(--ok)}.pill.bad{color:var(--bad)}.pill.warn{color:var(--warn)}.pill.gold{color:var(--goldt)}.pill.mute{color:var(--muted)}
+.eyebrow{font:500 13px/1.4 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--goldt)}
+.page-h{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end;margin:12px 0 22px}
+.page-h h1{font:600 40px/1.05 var(--display)}
+.page-h p.sub{color:var(--muted);margin-top:6px;max-width:48ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.pad{padding:20px}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+h2.sec,h3.sec{font:600 13px/1.4 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--goldt);margin:0 0 10px}
+.stack>*+*{margin-top:12px}
+
+/* pipeline strip */
+.strip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin-bottom:22px;border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden;box-shadow:var(--shadow)}
+.strip button{background:none;border:0;border-left:1px solid var(--line);padding:12px 14px;text-align:left;min-height:64px;display:flex;flex-direction:column;justify-content:center}
+.strip button:first-child{border-left:0}
+.strip button:hover{background:var(--sunk)}
+.strip b{font:600 26px/1 var(--body)}
+.strip span{font-size:14px;color:var(--muted)}
+
+/* today */
+.today{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:24px;align-items:start}
+.task{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 14px;align-items:center;padding:16px 18px;border-top:1px solid var(--line)}
+.task:first-child{border-top:0}
+.task .mark{width:10px;height:10px;border-radius:99px;background:var(--gold);align-self:start;margin-top:8px}
+.task.late .mark{background:var(--bad)}
+.task .t{font-weight:600;overflow-wrap:anywhere}
+.task .s{color:var(--muted);font-size:15px}
+.task .acts{display:flex;gap:6px;align-items:center}
+.task.wait .t{font-weight:500}
+.empty{padding:26px 18px;text-align:center;color:var(--muted)}
+.row{display:flex;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line);min-width:0}
+.row:first-child{border-top:0}
+.row .g{flex:1;min-width:0}
+.row .t{font-weight:500;overflow-wrap:anywhere}
+.date{flex:none;width:54px;text-align:center;border:1px solid var(--line);border-radius:10px;padding:4px 0;line-height:1.1;background:var(--sunk)}
+.date b{display:block;font:600 20px/1 var(--body)}
+.date i{font:500 11px/1.3 var(--body);font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:var(--goldt)}
+
+/* board */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.chips button{min-height:40px;padding:0 14px;border:1px solid var(--edge);background:var(--surface);border-radius:99px;color:var(--muted)}
+.chips button[aria-pressed="true"]{background:var(--pri);border-color:var(--pri);color:var(--on-pri);font-weight:600}
+.board{display:grid;grid-template-columns:repeat(5,minmax(176px,1fr));gap:12px;overflow-x:auto;padding:2px 2px 14px;scroll-snap-type:x proximity}
+.lane{background:var(--sunk);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:200px;scroll-snap-align:start}
+.lane h3{font:600 13px/1.4 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--goldt);display:flex;justify-content:space-between;gap:8px;padding:2px 4px}
+.ecard{display:flex;flex-direction:column;gap:6px;text-align:left;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:var(--shadow)}
+.ecard:hover{border-color:var(--ink)}
+.ecard .t{font-weight:600;display:block}
+.ecard .s{font-size:14px;color:var(--muted);display:block}
+.ecard .nx{font-size:14px;font-weight:500;display:block;margin-top:2px}
+.dots{display:flex;gap:4px;margin:2px 0}
+.dots i{height:6px;flex:1;border-radius:3px;background:var(--line)}
+.dots i.done{background:var(--ok)}.dots i.cur{background:var(--gold)}
+.rail{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+.rail li{font-size:12px;color:var(--muted);text-align:center}
+.rail li::before{content:"";display:block;height:6px;border-radius:3px;background:var(--line);margin-bottom:6px}
+.rail li.done::before{background:var(--ok)}.rail li.cur::before{background:var(--gold)}
+.rail li.done{color:var(--ink)}.rail li.cur{color:var(--ink);font-weight:600}
+
+/* calendar */
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.cal .h{background:var(--sunk);padding:8px;font:500 12px/1.3 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--goldt)}
+.cal .d{background:var(--surface);min-height:96px;padding:6px;display:flex;flex-direction:column;gap:3px;text-align:left;border:0;border-radius:0;min-width:0}
+.cal .d:hover{background:var(--sunk)}
+.cal .d.out{background:var(--bg)}
+.cal .d.today .n{background:var(--pri);color:var(--on-pri);border-radius:99px;width:26px;height:26px;display:grid;place-items:center;font-weight:600}
+.cal .d.sel{outline:3px solid var(--focus);outline-offset:-3px}
+.cal .n{font-size:14px;color:var(--muted);width:26px;height:26px;display:grid;place-items:center}
+.ev{font-size:12px;line-height:1.3;padding:2px 6px;border-radius:4px;border-left:3px solid var(--ok);background:var(--sunk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.ev.q{border-left:3px dashed var(--warn)}.ev.m{border-left:3px dotted var(--muted)}.ev.x{border-left:3px double var(--bad)}
+.cal .dd{display:none;gap:4px;flex-wrap:wrap;justify-content:center}
+/* status shapes: circle confirmed, ring quote, square meeting/enquiry, diamond stock short (not colour alone) */
+.dd i,.legend i{display:inline-block;width:10px;height:10px;border-radius:99px;background:var(--ok);box-sizing:border-box}
+.dd i.q,.legend i.q{background:none;border:2px solid var(--warn)}
+.dd i.m,.legend i.m{border-radius:2px;background:var(--muted)}
+.dd i.x,.legend i.x{border-radius:1px;background:var(--bad);transform:rotate(45deg) scale(.9)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--muted);margin:12px 2px}
+.legend i{margin-right:8px;vertical-align:-1px}
+.clist .row{padding:14px 18px;border-top:1px solid var(--line)}
+.clist .row:first-child{border-top:0}
+
+/* lists / stock */
+.tbl{display:flex;flex-direction:column}
+.tr{display:grid;gap:12px;align-items:center;padding:12px 18px;border-top:1px solid var(--line);text-align:left;background:none;border-left:0;border-right:0;border-bottom:0;width:100%}
+button.tr:hover{background:var(--sunk)}
+.tr.hd{font:500 12px/1.4 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--goldt);border-top:0;padding-top:14px}
+.tr:first-child{border-top:0}
+.evl{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) 110px 150px minmax(0,1.5fr);align-items:start}
+.phd{display:none}
+.stock{grid-template-columns:minmax(0,2fr) 60px 70px 60px minmax(80px,1fr) 90px}
+.cust{grid-template-columns:minmax(0,2fr) 90px 150px minmax(0,1.4fr)}
+.pay{grid-template-columns:minmax(0,1.4fr) 92px 84px 84px 92px 136px 296px}
+.rev{grid-template-columns:minmax(0,1.4fr) 96px minmax(0,1.2fr) 150px 268px}
+.pay .pa,.rev .ra{justify-content:flex-end;flex-wrap:nowrap}
+.pay .ps,.rev .rs{padding-left:12px}
+.pay .ps,.rev .rs{justify-self:start}
+.pm,.nd{display:none}
+.page-h.top{align-items:flex-start}
+.kpi b,.strip b,.money b,.date b{font-family:var(--body);font-weight:600;font-variant-numeric:tabular-nums lining-nums}
+@media (max-width:1240px){
+  .pay{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"c s" "m m" "a a";gap:8px 12px}
+  .pay.hd,.rev.hd{display:none}
+  .pay .ps,.rev .rs{padding-left:0}
+  .pay .pc{grid-area:c}.pay .ps{grid-area:s;justify-self:end}.pay .pm{grid-area:m;display:block}.pay .pa{grid-area:a;justify-content:flex-start}
+  .pay .pe,.pay .pt,.pay .pp,.pay .pb{display:none}
+  .rev{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"c s" "q q" "a a";gap:8px 12px}
+  .rev .rc{grid-area:c}.rev .rs{grid-area:s;justify-self:end}.rev .rq{grid-area:q}.rev .ra{grid-area:a;justify-content:flex-start}.rev .rd{display:none}
+  .nd{display:inline}
+}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.meter{height:8px;background:var(--sunk);border-radius:4px;overflow:hidden;border:1px solid var(--line)}
+.meter u{display:block;height:100%;background:var(--ok)}.meter u.o{background:var(--bad)}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.kpi{padding:16px 18px}
+.kpi b{display:block;font:600 32px/1.05 var(--body)}
+.kpi span{font-size:14px;color:var(--muted)}
+.seg{display:inline-flex;border:1.5px solid var(--edge);border-radius:12px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:none;min-height:42px;padding:0 18px;color:var(--muted);font-weight:500;display:inline-flex;align-items:center;gap:8px}
+.seg button[aria-pressed="true"]{background:var(--pri);color:var(--on-pri);font-weight:600}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label,.lab{font-weight:500;font-size:15px}
+input,select,textarea{background:var(--surface);border:1.5px solid var(--edge);border-radius:10px;padding:10px 12px;min-height:46px;width:100%}
+input:hover,select:hover,textarea:hover{border-color:var(--ink)}
+textarea{min-height:110px;resize:vertical}
+.toolbar{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start;margin-bottom:16px}
+.toolbar>p{align-self:flex-end}
+.toolbar .field{margin:0;min-width:190px}
+
+/* sheet */
+.scrim{position:fixed;inset:0;z-index:40;background:#0b1612a6}
+.sheet{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--bg);z-index:41;overflow-y:auto;overscroll-behavior:contain;padding:20px 24px 28px;box-shadow:-10px 0 40px #0006}
+.sheet .x{position:sticky;top:0;float:right;z-index:4}
+.sheet h2.ttl{font:600 34px/1.05 var(--display);margin:4px 0 8px;outline:none}
+.sheet .blk{margin-top:22px}
+.sheet .pane{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.stick{position:sticky;bottom:0;z-index:3;background:var(--bg);margin:16px -24px -28px;padding:12px 24px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+.stick p{margin-bottom:8px}
+.next{border:1.5px solid var(--gold);background:var(--surface);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.next .k{font-weight:600;font-size:18px}
+.kv{display:grid;grid-template-columns:110px minmax(0,1fr);gap:6px 12px;font-size:15px}
+.kv dt{color:var(--muted)}.kv dd{margin:0;overflow-wrap:anywhere}
+.log{list-style:none;margin:0;padding:0 0 0 8px;border-left:2px solid var(--line)}
+.log li{position:relative;padding:0 0 14px 18px;font-size:15px}
+.log li::before{content:"";position:absolute;left:-6px;top:7px;width:9px;height:9px;border-radius:99px;background:var(--gold)}
+.log time{display:block;font-size:13px;color:var(--muted)}
+.money{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.money div{background:var(--sunk);border-radius:10px;padding:10px 12px}
+.money b{display:block;font:600 22px/1.1 var(--body)}
+.money span{font-size:13px;color:var(--muted)}
+.qline{display:grid;grid-template-columns:minmax(0,1fr) 84px 44px;gap:8px;align-items:center;margin-bottom:8px}
+.acts-row{display:flex;gap:10px;flex-wrap:wrap}
+.warnbox{border:1px solid var(--bad);color:var(--bad);border-radius:10px;padding:10px 12px;font-size:15px;background:color-mix(in srgb,var(--bad) 8%,transparent)}
+.okbox{border:1px solid var(--ok);color:var(--ok);border-radius:10px;padding:10px 12px;font-size:15px;background:color-mix(in srgb,var(--ok) 8%,transparent)}
+.av{width:40px;height:40px;border-radius:99px;background:var(--sunk);border:1px solid var(--line);display:grid;place-items:center;font:600 15px/1 var(--body);color:var(--goldt);flex:none}
+.desc{white-space:pre-line;background:var(--sunk);border-radius:10px;padding:10px 12px;font-size:14px;margin-top:4px}
+.row.ag{border-left:4px solid var(--ok);padding-left:12px}.row.ag.held{border-left-style:dashed;border-left-color:var(--warn)}.row.ag.meet{border-left-style:dotted;border-left-color:var(--muted)}
+.said{border-left:3px solid var(--gold);padding:2px 0 2px 14px;margin:0;font-size:17px;line-height:1.5}
+.sres{margin-top:14px}
+.clinks{display:inline-flex;flex-wrap:wrap;align-items:center;gap:0 16px}
+.clink{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;min-width:44px;color:var(--ink);text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
+.clink:hover{color:var(--goldt)}
+.clink.wa svg{color:var(--ok)}
+.datehint{display:block;margin-top:3px}
+::placeholder{color:var(--muted);opacity:1}
+a[href^="tel:"]{display:inline-flex;align-items:center;min-height:44px}
+.task .acts{flex-wrap:wrap}
+input[type=checkbox]{width:24px;height:24px;min-height:0;padding:0;accent-color:var(--pri);flex:none;cursor:pointer}
+.prow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px 10px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.prow .pn{grid-column:1/-1}
+.prow:first-child{border-top:0}
+.pk{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer}
+.pki{flex-direction:column;align-items:flex-start;gap:2px;min-height:0}
+.pki input{width:84px;min-height:40px}
+.brow{display:grid;grid-template-columns:minmax(110px,30%) minmax(0,1fr) minmax(0,auto);gap:12px;align-items:center;padding:8px 0}
+.bv{font-size:14px;color:var(--ink);text-align:right}
+.track{height:12px;background:var(--sunk);border:1px solid var(--line);border-radius:6px;overflow:hidden;display:block}
+.track u{display:block;height:100%;background:var(--ok)}
+.kpis4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.rgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;margin-bottom:20px}
+.rgrid:last-child{margin-bottom:0}
+@media (max-width:1000px){.rgrid{grid-template-columns:minmax(0,1fr)}.kpis4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media print{
+  .side,.bar,.tabbar,#toast,.scrim,.sheet,.no-print,.skip{display:none!important}
+  .shell{display:block}main{max-width:none;padding:0}
+  body{background:#fff;color:#000}.card{box-shadow:none}
+  body.print-doc #shell,body.print-doc #sheet-root{display:none!important}
+  .client{position:static;background:#fff;overflow:visible}.client .ban{display:none}
+  .qdoc{box-shadow:none;border:0;margin:0;max-width:none;padding:0}
+}
+.sres .row{padding:12px 0}
+.sres button.row{width:100%;background:none;border:0;border-top:1px solid var(--line);text-align:left}
+.sres button.row:hover{background:var(--sunk)}
+
+/* client page */
+.client{position:fixed;inset:0;z-index:60;background:var(--sunk);overflow-y:auto}
+.client .ban{position:sticky;top:0;background:var(--pri);color:var(--on-pri);padding:10px 16px;display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;font-size:15px}
+.client .ban .btn{background:var(--on-pri);color:var(--pri);border-color:var(--on-pri);min-height:40px}
+.qdoc{max-width:680px;margin:24px auto 48px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:clamp(20px,5vw,44px);box-shadow:var(--shadow)}
+.qdoc h1{font:600 42px/1.05 var(--display);margin:8px 0}
+.qdoc .tot{display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--gold);margin-top:10px;padding-top:12px;font:600 28px/1.2 var(--display)}
+.qdoc table{width:100%;border-collapse:collapse;margin-top:8px}
+.qdoc th{text-align:left;font:500 12px/1.4 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--goldt);padding:8px 0;border-bottom:1px solid var(--line)}
+.qdoc td{padding:10px 0;border-bottom:1px solid var(--line)}
+.qdoc .num{text-align:right}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:80;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;max-width:min(92vw,520px);font-size:15px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+
+@media (max-width:1000px){.today{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .side{display:none}
+  .bar{padding:10px 16px;gap:8px}
+  .bar .brand{display:block}
+  .bar .lg{display:none}
+  .bar .btn.pri{padding:0;width:44px}
+  main{padding:4px 16px 110px}
+  .page-h h1{font-size:34px}
+  .tabbar{display:grid;grid-template-columns:repeat(6,1fr);position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom,0px))}
+  .tabbar button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:56px;border:0;background:none;color:var(--muted);font-size:12px;font-weight:500;border-radius:10px}
+  .tabbar button[aria-current="page"]{color:var(--ink);font-weight:600}
+  .tabbar button[aria-current="page"] svg{stroke:var(--pri);stroke-width:2.4}
+  .tabbar .n{position:absolute;top:0;right:calc(50% - 30px);min-width:18px;height:18px;border-radius:9px;background:var(--pri);color:var(--on-pri);font-size:11px;display:grid;place-items:center;padding:0 4px}
+  .chips{flex-wrap:nowrap;overflow-x:auto;margin:0 -16px 16px;padding:2px 16px}
+  .chips button{flex:none}
+  .strip button{padding:10px 8px;min-height:62px}
+  .strip span{font-size:12px}
+  .task{grid-template-columns:auto minmax(0,1fr)}
+  .task .acts{grid-column:2;margin-top:6px}
+  .board{display:flex;scroll-snap-type:x mandatory;margin:0 -16px;padding:2px 16px 14px}
+  .lane{flex:0 0 84%;scroll-snap-align:center}
+  .cal .d{min-height:58px;padding:4px;align-items:center}
+  .cal .ev{display:none}.cal .dd{display:flex}
+  .cal .h{padding:6px 2px;text-align:center;font-size:11px;letter-spacing:.04em}
+  .kpis{grid-template-columns:1fr;gap:8px}
+  .kpi{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 16px}
+  .kpi b{font-size:26px;flex:none}
+  .kpis4 .kpi{display:block;padding:12px 14px}.kpis4 .kpi span{text-align:left;display:block}
+  .prow{grid-template-columns:1fr 1fr;gap:4px 10px}.prow .pn{grid-column:1/-1}.prow .pki{grid-column:1/-1;flex-direction:row;align-items:center;justify-content:space-between}
+  .brow{grid-template-columns:minmax(84px,34%) minmax(0,1fr)}.brow .bv{grid-column:1/-1;text-align:left;margin-top:-4px}
+  .kpi span{text-align:right}
+  .tr{padding:12px 14px}
+  .evnew{display:none}
+  #main .toolbar .field{flex:1 1 140px;min-width:0}
+  .evl{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"a d" "b b" "e e";gap:6px 12px}.evl.hd{display:none}.evl .ea{grid-area:a}.evl .eb{grid-area:b}.evl .ed{grid-area:d}.evl .ee{grid-area:e}.evl .ec{display:none}.phd{display:inline}
+  .stock{grid-template-columns:minmax(0,1fr) auto}.stock .c2,.stock .c3{display:none}.stock.hd{display:none}
+  .cust{grid-template-columns:minmax(0,1fr) auto}.cust .c3,.cust .c4{display:none}.cust.hd{display:none}
+  .sheet{top:6vh;left:0;width:100%;border-radius:20px 20px 0 0;padding:16px 16px 24px}
+  .stick{margin:16px -16px -24px;padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px))}
+  .sheet h2.ttl{font-size:30px}
+  .kv{grid-template-columns:96px minmax(0,1fr)}
+  #toast{bottom:84px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .sheet{animation:in .22s ease-out}.scrim{animation:fade .2s}
+  @keyframes in{from{transform:translateX(28px);opacity:.4}}
+  @keyframes fade{from{opacity:0}}
+  @media (max-width:860px){.sheet{animation-name:up}@keyframes up{from{transform:translateY(40px);opacity:.4}}}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></symbol>
+<symbol id="i-board" viewBox="0 0 24 24"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="10" rx="1"/><rect x="17" y="4" width="4" height="13" rx="1"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><path d="M16 4.5a3.5 3.5 0 010 7M18 14c2.2.6 3.5 2.6 3.5 6"/></symbol>
+<symbol id="i-pound" viewBox="0 0 24 24"><path d="M17 6.5A4 4 0 009.5 8v4m0 0H7m2.5 0v4c0 1.5-.8 2.5-2.5 3h11M9.5 12H14"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+<symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+<symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 20l1.4-4A8 8 0 1 1 8.2 19z"/><path d="M9 10h6M9 13h4"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+</defs></svg>
+
+<div class="shell" id="shell">
+  <aside class="side" aria-label="Main">
+    <div class="brand">Saino Events<small>Studio</small></div>
+    <nav class="nav" id="nav" aria-label="Sections"></nav>
+    <div class="foot">
+      <span class="chip demo" style="align-self:flex-start">Sample data only</span>
+      
+      
+    </div>
+  </aside>
+  <div class="col">
+    <header class="bar">
+      <div class="brand">Saino</div>
+      <span class="chip demo">Sample<span class="lg">&nbsp;data</span></span>
+      <button class="ib" type="button" data-a="open" data-k="search" aria-label="Search" title="Search (shortcut: /)"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg></button>
+      <button class="ib" type="button" data-a="open" data-k="demo" aria-label="Demo controls"><svg class="i" aria-hidden="true"><use href="#i-sliders"/></svg></button>
+      <button class="btn pri" type="button" data-a="open" data-k="new" aria-label="New enquiry"><svg class="i s" aria-hidden="true"><use href="#i-plus"/></svg><span class="lg">New enquiry</span></button>
+    </header>
+    <main id="main" tabindex="-1"></main>
+  </div>
+</div>
+<nav class="tabbar" id="tabbar" aria-label="Sections"></nav>
+<div id="sheet-root"></div>
+<div id="client-root"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* ================= sample data (all invented; amounts are sample figures only) ================= */
+const START='2026-11-24';
+const KEY='saino-crm-v2-inbox-f', TKEY='saino-crm-v2-inbox-theme';
+const STAGES=['New enquiry','Meeting booked','Quote sent','Confirmed','Completed'];
+const TYPES=['Wedding','Nepali wedding','Birthday','Anniversary','Baby shower','Christmas party','Corporate event','Themed event','Something else'];
+const SOURCES=['Website form','WhatsApp','Referral','Facebook','Instagram'];
+const ITEMS0=[
+ {id:'chaise',name:'Gold chaise sofa',cat:'Seating',total:6,cond:'Good'},
+ {id:'throne',name:'Gold throne chair',cat:'Seating',total:14,cond:'Good'},
+ {id:'chiv',name:'Chiavari chair, white',cat:'Seating',total:220,cond:'Good'},
+ {id:'wall',name:'Flower wall panel',cat:'Backdrops',total:40,cond:'Good'},
+ {id:'arch',name:'Round arch frame',cat:'Backdrops',total:8,cond:'Good'},
+ {id:'star',name:'Starlight backdrop',cat:'Backdrops',total:6,rep:2,cond:'Needs repair'},
+ {id:'drape',name:'Draping set, white',cat:'Fabric',total:14,cond:'Good'},
+ {id:'red',name:'Red carpet runner',cat:'Aisle',total:8,cond:'Good'},
+ {id:'white',name:'White aisle runner',cat:'Aisle',total:8,cond:'Good'},
+ {id:'pillar',name:'Gold pillar, pair',cat:'Aisle',total:10,cond:'Good'},
+ {id:'balarch',name:'Balloon arch frame',cat:'Balloons',total:6,cond:'Good'},
+ {id:'neon',name:'Neon sign',cat:'Signs',total:5,cond:'Good'},
+ {id:'vase',name:'Centrepiece vase',cat:'Tables',total:60,cond:'Good'},
+ {id:'candle',name:'LED candle set',cat:'Tables',total:40,cond:'Good'}
+];
+let ITEMS=ITEMS0;
+const avail=i=>Math.max(0,i.total-(i.rep||0));
+const CUST=[
+ ['c1','Aarati and Binod G.','07700 900101','Families want marigold garlands and Nepali signs at the entrance. Prefers WhatsApp in the evening.'],
+ ['c2','Sunita R.','07700 900102','Repeat customer. Baby shower in June, now planning a wedding.'],
+ ['c3','Priya and Daniel M.','07700 900103','Referred by a past couple. Likes cream, sage and gold.'],
+ ['c4','Kiran T.','07700 900104','First birthday. Wants butterflies and a lit number 1.'],
+ ['c5','Haddad family','07700 900105','Community winter night. Hall is booked by the family.'],
+ ['c6','Sample Logistics Ltd','07700 900106','Annual dinner. Contact is the office manager. Needs an invoice address before the event.'],
+ ['c7','Rita S.','07700 900107','Asked on WhatsApp about an 18th birthday.'],
+ ['c8','Joseph and Mary K.','07700 900108','Found us through the website. Venue not chosen yet.'],
+ ['c9','Tenzin L.','07700 900109','Venue access from 8am on the day.'],
+ ['c10','Dipesh and Anita','07700 900110','Asked for photos to share. Happy with the result.'],
+ ['c11','Sample Consulting Ltd','07700 900111','Awards night, about 90 guests.'],
+ ['c12','Rahul P.','07700 900112','Chose another supplier.'],
+ ['c13','Maya and Arjun','07700 900113','Wedding on 22 November. Very happy on the day.'],
+ ['c14','Hannah and Josh','07700 900114','Met at the venue open day. Wants a barn look with warm lights.']
+].map(([id,name,phone,notes])=>({id,name,phone,email:id+'.sample@example.com',notes}));
+const FM=o=>Object.assign({partner:'',contactBy:'WhatsApp',flex:false,booked:'Not yet',guestsBand:'',services:[],budget:'Not sure yet',style:'',link:'',msg:'',meet:null,heard:'Google',consent:true},o);
+const A=(when,place,via,done)=>({when,place,via,done});
+const Q=(ref,sent,total,acc)=>({ref,sent,total,state:acc?'accepted':'sent',acc:acc||null,valid:14,sample:true});
+const P=(d,a,m,n)=>({d,a,m,n});
+const SEED=[
+ {id:'b1',cid:'c1',type:'Nepali wedding',date:'2027-02-13',venue:'Hall, Farnborough',guests:220,stage:'Confirmed',src:'Website form',rec:'2026-09-28',appt:A('2026-10-02T11:00','At the venue','Phone call',true),quote:Q('Q-1001','2026-10-05',4200,'2026-10-09'),pay:[P('2026-10-09',1000,'Bank transfer','Deposit')],items:{chaise:2,throne:4,chiv:220,wall:12,arch:2,drape:6,red:2,pillar:4,neon:1,vase:24,candle:20}},
+ {id:'b2',cid:'c2',type:'Nepali wedding',date:'2026-12-19',venue:'Hall, Aldershot',guests:180,stage:'Quote sent',src:'WhatsApp',rec:'2026-11-10',appt:A('2026-11-14T15:00','Video call','Email',true),quote:Q('Q-1002','2026-11-20',2800),items:{chaise:2,throne:2,chiv:180,wall:10,arch:1,drape:5,red:1,pillar:2,neon:1,vase:20,candle:16}},
+ {id:'b3',cid:'c3',type:'Wedding',date:'2027-03-06',venue:'Manor house, Hook',guests:120,stage:'Meeting booked',src:'Referral',rec:'2026-11-18',appt:A('2026-11-27T11:00','At the venue','Phone call',false),items:{}},
+ {id:'b4',cid:'c4',type:'Birthday',date:'2026-12-05',venue:'Community hall, Camberley',guests:90,stage:'Confirmed',src:'Facebook',rec:'2026-10-20',appt:A('2026-10-25T18:00','Phone call','Phone call',true),quote:Q('Q-1003','2026-10-27',650,'2026-10-29'),pay:[P('2026-10-29',200,'Online payment','Deposit')],items:{balarch:2,neon:1,chiv:90,vase:8}},
+ {id:'b5',cid:'c5',type:'Themed event',date:'2026-12-12',venue:'Community hall, Farnham',guests:150,stage:'Confirmed',src:'WhatsApp',rec:'2026-10-15',appt:A('2026-10-19T19:00','Video call','Phone call',true),quote:Q('Q-1004','2026-10-22',900,'2026-10-24'),pay:[P('2026-10-24',300,'Bank transfer','Deposit')],items:{star:3,drape:4,chiv:150,vase:12,candle:10}},
+ {id:'b6',cid:'c6',type:'Corporate event',date:'2026-12-11',venue:'Hotel suite, Fleet',guests:140,stage:'Quote sent',src:'Website form',form:FM({contactBy:'Email',booked:'Yes',guestsBand:'100 to 200',services:['Lighting & drapery','Props & custom backdrops'],budget:'Under £2,000',style:'Dark blue and silver, company logo on the stage',msg:'Annual dinner. The hotel suite is ready from 4pm. Please include a backdrop with our logo.',meet:{how:'Video call',day:'2026-11-12',time:'Morning'},heard:'Friend or family'}),rec:'2026-11-05',appt:A('2026-11-12T10:00','Video call','Email',true),quote:Q('Q-1005','2026-11-17',1800),items:{star:4,drape:4,chiv:140,vase:16,candle:14,neon:1,arch:1}},
+ {id:'b7',cid:'c7',type:'Birthday',date:'2026-12-20',venue:'Not chosen',guests:80,stage:'New enquiry',src:'WhatsApp',rec:'2026-11-24',items:{}},
+ {id:'b8',cid:'c8',type:'Wedding',date:'2027-04-17',venue:'Not chosen',guests:200,stage:'New enquiry',src:'Website form',form:FM({partner:'Mary',contactBy:'Email',flex:true,booked:'Not yet',guestsBand:'100 to 200',services:['Full-service decoration','Floral arrangements'],budget:'£5,000 to £10,000',style:'Soft pinks and greenery',msg:'We have not chosen a venue yet. Could you suggest halls that work well with your decor?',meet:{how:'Phone call',day:'2026-11-26',time:'Evening'},heard:'Google'}),rec:'2026-11-23',items:{}},
+ {id:'b9',cid:'c9',type:'Nepali wedding',date:'2026-11-28',venue:'Hall, Aldershot',guests:160,stage:'Confirmed',src:'Referral',rec:'2026-10-01',appt:A('2026-10-06T16:00','At the venue','Phone call',true),quote:Q('Q-1006','2026-10-09',3100,'2026-10-12'),pay:[P('2026-10-12',1000,'Bank transfer','Deposit'),P('2026-11-10',500,'Cash','Second payment')],items:{chaise:2,throne:4,chiv:160,wall:10,arch:2,drape:5,red:2,pillar:4,neon:1,vase:18,candle:14,star:2},
+  day:{setup:'08:00',teardown:'23:30',contact:'Hall manager (sample)',phone:'07700 900150',access:'Loading bay at the back of the hall. Parking for one van.',crew:'Sajjan, Deepan, Team member (sample)',notes:'Stage is 4m wide. Marigold garlands go on the entrance arch.'},
+  pack:{out:{chaise:true,throne:true,chiv:true,wall:true,arch:true},back:{},issue:{}}},
+ {id:'b10',cid:'c2',type:'Birthday',date:'2026-06-12',venue:'Hall, Aldershot',guests:60,stage:'Completed',src:'WhatsApp',rec:'2026-05-20',appt:A('2026-05-25T17:00','Phone call','Phone call',true),quote:Q('Q-0901','2026-05-27',450,'2026-05-29'),pay:[P('2026-06-12',450,'Cash','Paid on the day')],rev:{due:'2026-06-15',sent:'2026-06-15',recv:'2026-06-20',n:0},items:{}},
+ {id:'b11',cid:'c11',type:'Corporate event',date:'2027-01-23',venue:'Hotel suite, Fleet',guests:90,stage:'Meeting booked',src:'Website form',form:FM({contactBy:'Email',booked:'Yes',guestsBand:'60 to 100',services:['Lighting & drapery','Table setups'],budget:'£2,000 to £5,000',style:'Black and gold',msg:'Awards night. We would like a red-carpet style entrance.',meet:{how:'Video call',day:'2026-12-03',time:'Afternoon'},heard:'Instagram'}),rec:'2026-11-20',appt:A('2026-12-03T14:00','Video call','Email',false),items:{star:2,drape:2,chiv:90,vase:10,neon:1}},
+ {id:'b12',cid:'c10',type:'Wedding',date:'2026-10-31',venue:'Barn venue, Alton',guests:130,stage:'Completed',src:'Facebook',rec:'2026-08-02',appt:A('2026-08-08T12:00','At the venue','Phone call',true),quote:Q('Q-0950','2026-08-10',2600,'2026-08-14'),pay:[P('2026-08-14',1000,'Bank transfer','Deposit'),P('2026-10-30',1600,'Bank transfer','Balance')],rev:{due:'2026-11-03',sent:'2026-11-03',recv:null,n:0},items:{}},
+ {id:'b13',cid:'c12',type:'Wedding',date:'2027-01-09',venue:'Hall, Guildford',guests:100,stage:'Lost',src:'Facebook',rec:'2026-11-01',appt:A('2026-11-05T18:00','Phone call','Phone call',true),quote:Q('Q-1000','2026-11-08',null),items:{}},
+ {id:'b14',cid:'c13',type:'Wedding',date:'2026-11-22',venue:'Hall, Aldershot',guests:140,stage:'Completed',src:'Referral',rec:'2026-09-15',appt:A('2026-09-20T12:00','At the venue','Phone call',true),quote:Q('Q-1007','2026-09-22',3500,'2026-09-25'),pay:[P('2026-09-25',2000,'Bank transfer','Deposit')],rev:{due:'2026-11-25',sent:null,recv:null,n:0},items:{chiv:140,vase:16,candle:12,drape:4},
+  day:{setup:'09:00',teardown:'23:00',contact:'Hall manager (sample)',phone:'07700 900151',access:'Side door, ring the bell.',crew:'Sajjan, Deepan',notes:''},
+  pack:{out:{chiv:true,vase:true,candle:true,drape:true},back:{chiv:true,candle:true,drape:true},issue:{vase:1}}},
+ {id:'b15',cid:'c14',type:'Wedding',date:'2027-05-22',venue:'Barn venue, Alton',guests:110,stage:'Meeting booked',src:'Referral',rec:'2026-11-16',appt:A('2026-11-23T10:00','At the venue','Phone call',true),items:{}}
+];
+function prep(b){
+  b=JSON.parse(JSON.stringify(b));
+  Object.assign(b,{pay:b.pay||[],items:b.items||{},appt:b.appt||null,quote:b.quote||null,rev:b.rev||null,snooze:'',log:[]});
+  const L=b.log;
+  L.push({d:b.rec,t:'Enquiry received from '+b.src});
+  if(b.appt){L.push({d:b.rec,t:'Meeting booked ('+b.appt.place.toLowerCase()+')'});if(b.appt.done)L.push({d:b.appt.when.slice(0,10),t:'Meeting held'})}
+  if(b.quote){L.push({d:b.quote.sent,t:'Quote '+b.quote.ref+' sent online'});if(b.quote.acc)L.push({d:b.quote.acc,t:'Client accepted the quote online'})}
+  b.pay.forEach(p=>L.push({d:p.d,t:'Payment of £'+p.a+' received ('+p.m.toLowerCase()+')'}));
+  if(b.stage==='Completed')L.push({d:b.date,t:'Event completed'});
+  if(b.rev&&b.rev.sent)L.push({d:b.rev.sent,t:'Google review request sent'});
+  if(b.rev&&b.rev.recv)L.push({d:b.rev.recv,t:'Client left a Google review'});
+  if(b.stage==='Lost')L.push({d:'2026-11-15',t:'Marked as lost. Client chose another supplier.'});
+  L.sort((x,y)=>x.d.localeCompare(y.d));return b;
+}
+function simEnquiry(){
+  if(book('bweb1'))return null;
+  S.c.push({id:'cweb1',name:'Anita G.',phone:'07700 900115',email:'anita.sample@example.com',notes:'Mehendi night the evening before the wedding. Asked about hall rules for draping.'});
+  const b=prep({id:'bweb1',cid:'cweb1',type:'Nepali wedding',date:'2027-06-12',venue:'Not decided yet',guests:150,stage:'New enquiry',src:'Website form',rec:TODAY,
+    form:FM({partner:'Roshan',contactBy:'WhatsApp',flex:false,booked:'Need help finding one',guestsBand:'100 to 200',services:['Full-service decoration','Lighting & drapery','Props & custom backdrops'],budget:'£5,000 to £10,000',style:'Ivory, gold and marigold orange',link:'pinterest.example/saino-sample-board',
+      msg:'We are planning a Nepali wedding with a Mehendi night the evening before. We are worried whether the hall will allow draping, and how early you can set up.',meet:{how:'Video call',day:addDays(TODAY,4),time:'Evening'},heard:'Instagram'})});
+  b.log=[{d:TODAY,t:'Enquiry received from the website form and saved to the enquiry sheet'},{d:TODAY,t:'Instant reply sent to the customer (demo: not really sent)'},{d:TODAY,t:'Sajjan and Deepan notified (demo: not really sent)'}];
+  S.b.push(b);return b}
+function fresh(){return {b:SEED.map(prep),c:JSON.parse(JSON.stringify(CUST)),today:START,cfg:{revDays:3},g:{on:true,snap:null,feed:[]},items:JSON.parse(JSON.stringify(ITEMS0))}}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));return s&&s.b?s:null}catch(e){return null}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let S=load()||fresh(); let TODAY=S.today||START;
+
+/* ================= helpers ================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const D=s=>new Date(s+'T00:00:00');
+const iso=(y,m,d)=>y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+const addDays=(s,n)=>{const d=D(s);d.setDate(d.getDate()+n);return iso(d.getFullYear(),d.getMonth()+1,d.getDate())};
+const days=(a,b)=>Math.round((D(b)-D(a))/864e5);
+const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const WDL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const fmt=s=>{if(!s)return 'No date';const d=D(s),dd=days(TODAY,s);return WD[d.getDay()]+' '+d.getDate()+' '+MO[d.getMonth()]+((dd<-60||dd>300)?' '+d.getFullYear():'')};
+const fmtLong=s=>WDL[D(s).getDay()]+' '+D(s).getDate()+' '+MON[D(s).getMonth()]+' '+D(s).getFullYear();
+const fmtWhen=w=>fmt(w.slice(0,10))+' at '+w.slice(11);
+const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const greetN=c=>c.name.replace(/ [A-Z]\.$/,'');
+const money=n=>{const v=Math.round(Number(n)*100)/100;return '£'+v.toLocaleString('en-GB',{minimumFractionDigits:v%1?2:0,maximumFractionDigits:2})};
+const qUntil=b=>addDays(b.quote.sent,+b.quote.valid||14);
+const qExp=b=>b.stage==='Quote sent'&&!!b.quote&&(TODAY>qUntil(b)||b.date<TODAY);
+const smp=b=>!!(b&&b.quote&&b.quote.sample);
+const amtS=(b,n)=>money(n)+(smp(b)?' (sample)':'');
+const inN=n=>n<0?Math.abs(n)+(n===-1?' day ago':' days ago'):n===0?'today':n===1?'tomorrow':'in '+n+' days';
+const cust=id=>S.c.find(c=>c.id===id), book=id=>S.b.find(b=>b.id===id), item=id=>ITEMS.find(i=>i.id===id);
+const tot=b=>b.quote&&b.quote.total?+b.quote.total:0;
+const paid=b=>Math.round(b.pay.reduce((a,p)=>a+ +p.a,0)*100)/100;
+const bal=b=>Math.max(0,Math.round((tot(b)-paid(b))*100)/100);
+const balDue=b=>addDays(b.date,-7);
+const hasMoney=b=>(b.stage==='Confirmed'||b.stage==='Completed')&&tot(b)>0;
+const live=b=>b.stage!=='Lost'&&b.stage!=='Completed';
+const first=c=>c.name.replace(/ [A-Z]\.$/,'').split(' and ')[0];
+const log=(b,t,d)=>b.log.push({d:d||TODAY,t});
+const vl=v=>v==='WhatsApp'?v:v.toLowerCase();
+const lc=t=>t.replace(/^(?!Nepali)(\w)/,m=>m.toLowerCase());
+const ico=(n,c)=>'<svg class="i'+(c?' '+c:'')+'" aria-hidden="true"><use href="#i-'+n+'"/></svg>';
+const dateBox=s=>'<div class="date"><b>'+D(s).getDate()+'</b><i>'+MO[D(s).getMonth()]+'</i></div>';
+const stagePill=st=>'<span class="pill '+({'New enquiry':'mute','Meeting booked':'gold','Quote sent':'warn','Confirmed':'ok','Completed':'ok','Lost':'bad'}[st])+'">'+st+'</span>';
+
+/* automatic steps: the system moves things on by itself and writes down why */
+function tick(){
+  S.b.forEach(b=>{
+    if(b.stage==='Confirmed'&&b.date<TODAY){b.stage='Completed';b.rev={due:addDays(b.date,S.cfg.revDays),sent:null,recv:null,n:0};
+      log(b,'Moved to Completed automatically (the event date has passed)',addDays(b.date,1));
+      if(bal(b)>0)log(b,'Balance of '+money(bal(b))+' still to collect',addDays(b.date,1))}
+    if(b.stage==='Completed'&&b.rev&&!b.rev.sent&&b.rev.due<=TODAY){b.rev.sent=b.rev.due;log(b,'Google review request sent automatically (demo: not really sent)',b.rev.due)}
+  });
+}
+function usage(date){const u={};ITEMS.forEach(i=>u[i.id]={conf:0,held:0});
+  S.b.filter(b=>b.date===date&&(b.stage==='Confirmed'||(b.stage==='Quote sent'&&!qExp(b)))).forEach(b=>{for(const k in b.items)if(u[k])u[k][b.stage==='Confirmed'?'conf':'held']+=b.items[k]});return u}
+function shortOf(b){if(!(b.stage==='Confirmed'||(b.stage==='Quote sent'&&!qExp(b))))return[];const u=usage(b.date);return Object.keys(b.items).filter(k=>u[k].conf+u[k].held>avail(item(k)))}
+function steps(b){return [
+  {k:'Enquiry',done:true},{k:'Meeting',done:!!(b.appt&&b.appt.done)},{k:'Quote',done:!!b.quote},
+  {k:'Confirmed',done:b.stage==='Confirmed'||b.stage==='Completed'},{k:'Paid',done:hasMoney(b)&&bal(b)===0},{k:'Review',done:!!(b.rev&&b.rev.recv)}]}
+function curStep(b){const st=steps(b);return b.stage==='Lost'?-1:st.findIndex(s=>!s.done)}
+const NEXTW={Meeting:'meeting',Quote:'send the quote',Confirmed:'client accepts',Paid:'full payment',Review:'Google review'};
+function stepText(b){if(b.stage==='Lost')return 'Closed (lost)';const st=steps(b),c=curStep(b),done=st.filter(x=>x.done).length;return c<0?'All 6 steps done':done+' of 6 done · Next: '+NEXTW[st[c].k]}
+function railHTML(b,labels){const st=steps(b),cur=curStep(b);
+  if(!labels)return '<div class="dots" aria-hidden="true">'+st.map((s,i)=>'<i class="'+(s.done?'done':i===cur?'cur':'')+'"></i>').join('')+'</div>';
+  return '<ol class="rail" aria-label="Progress">'+st.map((s,i)=>'<li class="'+(s.done?'done':i===cur?'cur':'')+'">'+s.k+(s.done?'<span class="sr"> (done)</span>':i===cur?'<span class="sr"> (now)</span>':'')+'</li>').join('')+'</ol>'}
+
+/* ================= what needs doing (the heart of the Today screen) ================= */
+const DAYD={setup:'',teardown:'',contact:'',phone:'',access:'',crew:'',notes:''};
+const dayOf=b=>Object.assign({},DAYD,b.day||{});
+function packSt(b){const ks=Object.keys(b.items),p=b.pack||{},o=p.out||{},r=p.back||{},i=p.issue||{};
+  return {total:ks.length,out:ks.filter(k=>o[k]).length,back:ks.filter(k=>r[k]).length,lnb:ks.filter(k=>o[k]&&!r[k]).length,issues:ks.reduce((a,k)=>a+(+i[k]||0),0),has:!!b.pack}}
+function tasks(){
+  const T=[];const push=(b,o)=>T.push(Object.assign({b,date:b.date,urg:2},o));
+  S.b.forEach(b=>{
+    if(b.stage==='Lost')return;const c=cust(b.cid),n=c.name,snz=b.snooze&&b.snooze>TODAY;
+    if(b.stage==='New enquiry'){const a=days(b.rec,TODAY);
+      push(b,{g:snz?'hide':'now',urg:b.replied?1:(a>=2?0:1),alt:b.replied?null:{l:'Reply',k:'msg'},title:b.replied?'Book a meeting with '+n:(b.form&&b.form.contactBy==='Phone call'?'Call '+n:'Reply to '+n+(b.form?(b.form.contactBy==='WhatsApp'?' on WhatsApp':' by email'):'')),sub:(b.replied?'You replied '+fmt(b.replied)+'. ':'')+b.type+' on '+fmt(b.date)+(b.form&&b.form.flex?' (date flexible)':'')+' · '+b.src+' · '+(a===0?'came in today':a===1?'came in yesterday':'came in '+a+' days ago')+(b.form&&b.form.meet?'. Asked for a '+b.form.meet.how.toLowerCase()+' on '+fmt(b.form.meet.day)+', '+b.form.meet.time.toLowerCase():''),btn:'Book a meeting',k:'appt'})}
+    if(b.stage==='Meeting booked'&&b.appt){const d=days(TODAY,b.appt.when.slice(0,10));
+      if(b.appt.done)push(b,{g:snz?'hide':'now',urg:1,title:'Send the quote to '+n,sub:'Meeting held. Build the quote and send it online.',btn:'Prepare quote',k:'quote'});
+      else if(d<=0)push(b,{g:'now',urg:d<0?0:1,title:'Meeting with '+n,sub:(d<0?'Was due '+fmtWhen(b.appt.when):'Today at '+b.appt.when.slice(11))+' · '+b.appt.place.toLowerCase(),btn:'Mark as held',k:'held'});
+      else push(b,{g:'soon',date:b.appt.when.slice(0,10),title:'Meeting with '+n,sub:fmtWhen(b.appt.when)+' · '+b.appt.place.toLowerCase(),btn:'Open',k:'b',soon:d<=7})}
+    if(b.stage==='Quote sent'&&qExp(b)){push(b,{g:snz?'hide':'now',urg:0,title:'Quote for '+n+' has expired',sub:'Quote '+b.quote.ref+' was valid until '+fmt(qUntil(b))+(b.date<TODAY?' and the event date has passed':'')+'. Send a new quote or mark it as lost.',btn:'Open',k:'b'})}
+    else if(b.stage==='Quote sent'){const a=days(b.quote.sent,TODAY);
+      if(a>=3)push(b,{g:snz?'hide':'now',urg:a>=5?0:1,title:'Check in with '+n+' about the quote',sub:'Quote '+b.quote.ref+' sent '+a+' days ago, no answer yet · valid until '+fmt(qUntil(b)),btn:'Open',k:'b'});
+      else push(b,{g:'wait',title:'Waiting for '+n+' to accept',sub:'Quote '+b.quote.ref+' sent '+inN(-a)+'. It confirms by itself when they accept.',btn:'Open',k:'b'})}
+    if(b.stage==='Confirmed'||b.stage==='Completed'){
+      if(shortOf(b).length)push(b,{g:'now',urg:0,title:'Not enough stock for '+n,sub:shortOf(b).map(k=>item(k).name).join(', ')+' on '+fmt(b.date),btn:'Open',k:'b'});
+      if(hasMoney(b)&&bal(b)>0){const dd=days(TODAY,balDue(b));
+        if(b.stage==='Completed'||dd<=7)push(b,{g:snz?'hide':'now',urg:b.stage==='Completed'||dd<0?0:dd===0?1:2,title:'Ask '+n+' for the '+amtS(b,bal(b))+' balance',sub:(b.stage==='Completed'?'Event done. ':'')+(dd<0?'Was due ':'Due ')+fmt(balDue(b))+(b.reqs?' · asked '+b.reqs+'× already':''),btn:'Request balance',k:'bal'})}
+      if(b.stage==='Confirmed'){const d=days(TODAY,b.date),ps=packSt(b);if(d<=7)push(b,{g:'soon',title:n+': '+lc(b.type),sub:fmt(b.date)+' · '+b.venue+' · '+b.guests+' guests',btn:'Open',k:'b',soon:true});
+        if(d>=0&&d<=7&&!dayOf(b).setup)push(b,{g:snz?'hide':'now',urg:d<=2?0:2,title:'Add set-up time and venue access for '+n,sub:fmt(b.date)+' · '+b.venue+'. The team needs these before the day.',btn:'Event-day sheet',k:'day'});
+        if(d>=0&&d<=2&&ps.total&&ps.out<ps.total)push(b,{g:'now',urg:d===0?0:1,title:'Load the van for '+n,sub:ps.out+' of '+ps.total+' items loaded · event '+(d===0?'today':inN(d)),btn:'Packing list',k:'pack'})}
+      if(b.stage==='Completed'&&b.pack){const ps=packSt(b),a=days(b.date,TODAY);
+        if(ps.issues>0)push(b,{g:snz?'hide':'now',urg:1,title:ps.issues+(ps.issues===1?' item':' items')+' missing or damaged from '+n,sub:'Noted on the packing list. Check it, then fix the stock or speak to the venue.',btn:'Packing list',k:'pack'});
+        else if(ps.lnb>0&&a>=1)push(b,{g:snz?'hide':'now',urg:1,title:'Check everything came back from '+n,sub:ps.lnb+' loaded '+(ps.lnb===1?'item is':'items are')+' not marked as returned yet',btn:'Packing list',k:'pack'})}
+      if(b.stage==='Completed'&&b.rev&&!b.rev.recv){const r=b.rev;
+        if(!r.sent)push(b,{g:'wait',title:'Review request to '+n+' goes out '+inN(days(TODAY,r.due)),sub:'Sent automatically. You can send it earlier.',btn:'Send now',k:'rev'});
+        else{const a=days(r.last||r.sent,TODAY);if(a>=7)push(b,{g:snz?'hide':'now',urg:2,title:'No Google review from '+n+' yet',sub:'Asked '+a+' days ago. Send a gentle reminder or mark it received.',btn:'Open',k:'rev'});
+          else push(b,{g:'wait',title:'Waiting for a Google review from '+n,sub:'Request sent '+fmt(r.last||r.sent),btn:'Open',k:'b'})}}}
+  });
+  return T;
+}
+const byUrg=(a,b)=>a.urg-b.urg||a.date.localeCompare(b.date);
+
+/* ================= Google Calendar + Contacts sync PREVIEW (demo only: nothing is connected to Google) ================= */
+function gCal(){const L=[];
+  S.b.forEach(b=>{if(b.stage==='Lost')return;const c=cust(b.cid);
+    const desc='Saino Events booking\n'+b.type+' · '+b.guests+' guests\nVenue: '+b.venue+'\nStage: '+b.stage+'\nOpen in the Saino CRM: [link to this record]';
+    if(b.appt)L.push({key:'m-'+b.id,b,kind:'meet',title:'Meeting: '+c.name,date:b.appt.when.slice(0,10),time:b.appt.when.slice(11),place:b.appt.place,desc:'Saino Events meeting\n'+b.type+' on '+fmt(b.date)+'\nOpen in the Saino CRM: [link to this record]'});
+    if(['Quote sent','Confirmed','Completed'].includes(b.stage))L.push({key:'e-'+b.id,b,kind:b.stage==='Quote sent'?'held':'event',title:(b.stage==='Quote sent'?'Held: ':'')+c.name+' · '+b.type,date:b.date,time:'',place:b.venue,desc});
+  });
+  L.forEach(x=>{x.hash=JSON.stringify([x.title,x.date,x.time,x.place,x.desc])});return L}
+function gCon(){const out=[];
+  S.c.forEach(c=>{const bs=S.b.filter(b=>b.cid===c.id&&b.stage!=='Lost');if(!bs.length)return;const l=bs.slice().sort((a,b)=>b.date.localeCompare(a.date))[0];
+    const x={key:'c-'+c.id,c,title:c.name,phone:c.phone,email:c.email,desc:'Saino customer. Latest: '+lc(l.type)+', '+fmt(l.date)+'.\nOpen in the Saino CRM: [link to this record]'};
+    x.hash=JSON.stringify([x.title,x.phone,x.email,x.desc]);out.push(x)});return out}
+function gsync(){
+  if(!S.g)S.g={on:true,snap:null,feed:[]};
+  const cal=gCal(),con=gCon(),cur={};cal.concat(con).forEach(x=>{cur[x.key]={h:x.hash,t:x.title}});
+  if(!S.g.snap){S.g.snap=cur;return}
+  if(!S.g.on)return;
+  const feed=[];
+  cal.forEach(x=>{const o=S.g.snap[x.key];
+    if(o===undefined){log(x.b,'Added to the Saino Google Calendar (demo: not really synced)');feed.push('Added to Google Calendar: '+x.title)}
+    else if(o.h!==x.hash){log(x.b,'Updated on the Saino Google Calendar (demo: not really synced)');feed.push('Updated on Google Calendar: '+x.title)}});
+  con.forEach(x=>{const o=S.g.snap[x.key];
+    if(o===undefined){const b=S.b.find(z=>z.cid===x.c.id);if(b)log(b,'Saved to Google Contacts (demo: not really synced)');feed.push('Saved to Google Contacts: '+x.title)}
+    else if(o.h!==x.hash)feed.push('Updated in Google Contacts: '+x.title)});
+  Object.keys(S.g.snap).forEach(k=>{if(!(k in cur))feed.push('Removed from Google '+(k[0]==='c'?'Contacts':'Calendar')+': '+S.g.snap[k].t)});
+  if(feed.length)S.g.feed=feed.map(t=>({d:TODAY,t})).concat(S.g.feed||[]).slice(0,30);
+  S.g.snap=cur}
+function gStat(x){if(!S.g||!S.g.snap)return 'ok';const o=S.g.snap[x.key];return o===undefined?'add':o.h!==x.hash?'upd':'ok'}
+const gPill=s=>({ok:'<span class="pill ok">Synced</span>',add:'<span class="pill warn">Waiting to add</span>',upd:'<span class="pill warn">Update waiting</span>',del:'<span class="pill warn">Removal waiting</span>'}[s]);
+function gGone(){if(!S.g||!S.g.snap)return[];const cur=new Set(gCal().concat(gCon()).map(x=>x.key));return Object.keys(S.g.snap).filter(k=>!cur.has(k)).map(k=>({key:k,title:S.g.snap[k].t}))}
+function gPending(){return gCal().concat(gCon()).filter(x=>gStat(x)!=='ok').length+gGone().length}
+function gPane(b){if(b.stage==='Lost')return '';
+  const ev=gCal().filter(x=>x.b===b),c=gCon().find(x=>x.c.id===b.cid);
+  const rows=ev.map(x=>'<div class="row"><div class="g"><div class="t">'+esc(x.title)+'</div><div class="s muted small">'+fmt(x.date)+(x.time?' at '+x.time:', all day')+' · Saino Google Calendar</div></div>'+gPill(gStat(x))+'</div>').join('')+
+    (c?'<div class="row"><div class="g"><div class="t">Google Contacts</div><div class="s muted small">Saved as “'+esc(c.title)+'” under “Saino customers”</div></div>'+gPill(gStat(c))+'</div>':'');
+  if(!rows)return '';
+  return '<div class="blk"><h3 class="sec">Google (preview)</h3><div class="pane">'+rows+'<p style="margin-top:10px"><button class="link" type="button" data-a="open" data-k="google">See the Google preview</button></p></div></div>'}
+/* ================= Event day + packing list ================= */
+function dayPane(b){if(!(b.stage==='Confirmed'||b.stage==='Completed'))return '';const d=dayOf(b),ps=packSt(b);
+  const row=(k,v)=>'<dt>'+k+'</dt><dd>'+(v?esc(v):'<span class="muted">Not added yet</span>')+'</dd>';
+  return '<div class="blk"><h3 class="sec">Event day</h3><div class="pane"><dl class="kv" style="margin:0;grid-template-columns:minmax(100px,36%) minmax(0,1fr)">'+row('Set-up',d.setup)+row('Take-down',d.teardown)+row('Venue contact',[d.contact,d.phone].filter(Boolean).join(' · '))+row('Who is going',d.crew)+'</dl>'+
+   '<p style="margin-top:12px">'+(ps.total?'<span class="pill '+(ps.out===ps.total?'ok':'gold')+'">Loaded '+ps.out+' of '+ps.total+'</span> <span class="pill '+(ps.back===ps.total?'ok':'gold')+'">Returned '+ps.back+' of '+ps.total+'</span>'+(ps.issues?' <span class="pill bad">'+ps.issues+' to check</span>':''):'<span class="muted small">No decor chosen yet, so there is no packing list.</span>')+'</p>'+
+   '<div class="acts-row" style="margin-top:10px"><button class="btn sm" type="button" data-a="open" data-k="day" data-id="'+b.id+'">Event-day sheet</button>'+(ps.total?'<button class="btn sm" type="button" data-a="open" data-k="pack" data-id="'+b.id+'">Packing list</button>':'')+'</div></div></div>'}
+function sDay(b){const c=cust(b.cid),d=dayOf(b),ps=packSt(b);
+  const f=(id,l,inner)=>'<div class="field"><label for="'+id+'">'+l+'</label>'+inner+'</div>';
+  return '<p class="eyebrow">Event day</p><h2 class="ttl" tabindex="-1" id="sh-t">Event-day sheet</h2><p class="muted">'+esc(c.name)+' · '+esc(b.type)+' · '+fmt(b.date)+' · '+esc(b.venue)+' · '+b.guests+' guests</p>'+
+   '<div class="blk"><div class="pane"><dl class="kv" style="margin:0;grid-template-columns:minmax(100px,36%) minmax(0,1fr)"><dt>Customer phone</dt><dd>'+phoneLinks(c)+'</dd><dt>Decor going</dt><dd>'+(ps.total?ps.total+' kinds of item':'Nothing chosen yet')+'</dd><dt>Customer notes</dt><dd>'+esc(c.notes||'None')+'</dd></dl></div></div>'+
+   '<form id="df" data-id="'+b.id+'" style="margin-top:18px">'+
+   f('dsu','Set-up starts','<input id="dsu" type="time" value="'+esc(d.setup)+'">')+
+   f('dtd','Take-down starts','<input id="dtd" type="time" value="'+esc(d.teardown)+'">')+
+   f('dct','Venue contact','<input id="dct" value="'+esc(d.contact)+'" placeholder="Name of the person at the venue">')+
+   f('dph','Venue contact phone','<input id="dph" type="tel" value="'+esc(d.phone)+'">')+
+   f('dac','Access and parking','<textarea id="dac" style="min-height:80px">'+esc(d.access)+'</textarea>')+
+   f('dcr','Who is going','<input id="dcr" value="'+esc(d.crew)+'" placeholder="For example Sajjan, Deepan">')+
+   f('dnt','Notes for the team','<textarea id="dnt" style="min-height:80px">'+esc(d.notes)+'</textarea>')+
+   '<div class="stick"><p class="muted small">Sample details only. Saved in this browser.</p><div class="acts-row"><button class="btn pri" type="submit">Save</button><button class="btn" type="button" data-a="savedoc" data-id="'+b.id+'">Save and print</button><button class="btn quiet" type="button" data-a="close">Close</button></div></div></form>'}
+function saveDay(b){b.day={setup:$('#dsu').value,teardown:$('#dtd').value,contact:$('#dct').value.trim(),phone:$('#dph').value.trim(),access:$('#dac').value.trim(),crew:$('#dcr').value.trim(),notes:$('#dnt').value.trim()}}
+function sPack(b){const ps=packSt(b),p=b.pack||{},o=p.out||{},r=p.back||{},iss=p.issue||{};
+  const rows=Object.keys(b.items).map(k=>{const it=item(k),q=b.items[k];
+    return '<div class="prow"><span class="pn"><b>'+esc(it.name)+'</b><span class="muted small" style="display:block">Quantity '+q+'</span></span>'+
+     '<label class="pk"><input type="checkbox" data-pk="out" data-k="'+k+'"'+(o[k]?' checked':'')+'><span>Loaded</span></label>'+
+     '<label class="pk"><input type="checkbox" data-pk="back" data-k="'+k+'"'+(r[k]?' checked':'')+'><span>Returned</span></label>'+
+     '<label class="pk pki"><span class="small muted">Missing or damaged</span><input type="number" min="0" max="'+q+'" value="'+(+iss[k]||0)+'" data-pk="issue" data-k="'+k+'" aria-label="Missing or damaged: '+esc(it.name)+'"></label></div>'}).join('');
+  return '<p class="eyebrow">Packing list</p><h2 class="ttl" tabindex="-1" id="sh-t">Packing and return</h2><p class="muted">'+esc(cust(b.cid).name)+' · '+esc(b.type)+' · '+fmt(b.date)+' · '+esc(b.venue)+'</p>'+
+   '<p style="margin-top:12px" aria-live="polite"><span class="pill '+(ps.out===ps.total?'ok':'gold')+'">Loaded '+ps.out+' of '+ps.total+'</span> <span class="pill '+(ps.back===ps.total?'ok':'gold')+'">Returned '+ps.back+' of '+ps.total+'</span>'+(ps.issues?' <span class="pill bad">'+ps.issues+' to check</span>':'')+'</p>'+
+   '<div class="acts-row" style="margin-top:12px"><button class="btn sm" type="button" data-a="packall" data-t="out" data-id="'+b.id+'">Mark all loaded</button><button class="btn sm" type="button" data-a="packall" data-t="back" data-id="'+b.id+'">Mark all returned</button><button class="btn sm" type="button" data-a="doc" data-t="pack" data-id="'+b.id+'">Print list</button></div>'+
+   '<div class="pane" style="margin-top:16px;padding-top:4px;padding-bottom:4px">'+(rows||'<p class="muted" style="padding:12px 0">No decor chosen yet.</p>')+'</div>'+
+   '<p class="muted small" style="margin-top:10px">Tick items as they go on the van and again when they come back. Anything missing or damaged shows up on the Today list so it is not forgotten. Sample data only.</p>'+
+   '<div class="blk"><button class="btn" type="button" data-a="close">Close</button></div>'}
+function packChange(t){const b=book(sheet.id);b.pack=b.pack||{out:{},back:{},issue:{}};const w=t.dataset.pk,k=t.dataset.k,before=packSt(b);
+  if(w==='issue'){const v=Math.max(0,Math.min(+t.max||0,Math.round(+t.value||0)));b.pack.issue[k]=v;if(v>0)log(b,'Marked '+v+' × '+item(k).name+' as missing or damaged')}
+  else b.pack[w][k]=t.checked;
+  const a=packSt(b);
+  if(a.total&&before.out<before.total&&a.out===a.total)log(b,'Everything loaded for the event');
+  if(a.total&&before.back<before.total&&a.back===a.total)log(b,'Everything returned from the event');
+  render()}
+function drawDoc(R){const b=book(clientView.id),c=cust(b.cid),kind=clientView.doc,d=dayOf(b),p=b.pack||{},o=p.out||{},r=p.back||{},iss=p.issue||{},ks=Object.keys(b.items);
+  const dd=(k,v)=>'<dt>'+k+'</dt><dd>'+(v?esc(v):'—')+'</dd>';
+  const body=kind==='day'?
+    '<dl class="kv" style="grid-template-columns:minmax(110px,32%) minmax(0,1fr);margin-top:14px">'+dd('Set-up',d.setup)+dd('Take-down',d.teardown)+dd('Venue contact',[d.contact,d.phone].filter(Boolean).join(' · '))+dd('Access and parking',d.access)+dd('Who is going',d.crew)+dd('Customer',c.name+' · '+c.phone)+dd('Customer notes',c.notes)+dd('Notes for the team',d.notes)+'</dl>'+
+    '<h3 class="sec" style="margin-top:22px">What goes</h3><table><thead><tr><th style="width:44px">Load</th><th>Decor</th><th class="num">Quantity</th></tr></thead><tbody>'+(ks.map(k=>'<tr><td>'+(o[k]?'☑':'☐')+'</td><td>'+esc(item(k).name)+'</td><td class="num">'+b.items[k]+'</td></tr>').join('')||'<tr><td colspan="3">Nothing chosen yet.</td></tr>')+'</tbody></table>':
+    '<table style="margin-top:14px"><thead><tr><th style="width:56px">Loaded</th><th style="width:64px">Returned</th><th>Decor</th><th class="num">Quantity</th><th class="num">Missing or damaged</th></tr></thead><tbody>'+(ks.map(k=>'<tr><td>'+(o[k]?'☑':'☐')+'</td><td>'+(r[k]?'☑':'☐')+'</td><td>'+esc(item(k).name)+'</td><td class="num">'+b.items[k]+'</td><td class="num">'+(+iss[k]||'')+'</td></tr>').join('')||'<tr><td colspan="5">Nothing chosen yet.</td></tr>')+'</tbody></table>';
+  R.innerHTML='<div class="client doc" role="dialog" aria-modal="true" aria-labelledby="cl-t"><div class="ban"><span>Print preview. Sample details only.</span><span class="acts-row"><button class="btn" type="button" data-a="print">Print</button><button class="btn" type="button" data-a="closeclient">Back to Saino Studio</button></span></div>'+
+   '<article class="qdoc"><p class="eyebrow">Saino Events · '+(kind==='day'?'Event-day sheet':'Packing and return list')+'</p><h1 id="cl-t" tabindex="-1">'+esc(c.name)+'</h1><p class="small" style="font-weight:600;color:var(--goldt);margin:0 0 4px">Sample details for the demo.</p><p class="muted">'+esc(b.type)+' · '+fmtLong(b.date)+' · '+esc(b.venue)+' · '+b.guests+' guests</p>'+body+'</article></div>';
+  if(clientView.fresh){R.querySelector('#cl-t').focus({preventScroll:true});clientView.fresh=false}}
+function sMore(){return '<p class="eyebrow">Other screens</p><h2 class="ttl" tabindex="-1" id="sh-t">More</h2><div class="stack" style="margin-top:16px"><button class="btn" style="width:100%;justify-content:flex-start" type="button" data-a="nav" data-v="people">'+ico('users')+'Customers</button><button class="btn" style="width:100%;justify-content:flex-start" type="button" data-a="nav" data-v="reports">'+ico('chart')+'Reports for the owners</button></div>'}
+
+/* ================= Reports for the owners ================= */
+let repP='all';
+const repIn=d=>{if(repP==='all')return true;const a=days(d,TODAY);return a>=0&&a<=+repP};
+const bkd=b=>b.stage==='Confirmed'||b.stage==='Completed';
+const pct=(a,b)=>b?Math.round(a/b*100)+'%':'0%';
+function barRow(label,val,max,txt,sub){return '<div class="brow"><span class="bl">'+label+(sub?'<span class="muted small" style="display:block">'+sub+'</span>':'')+'</span><span class="track" aria-hidden="true"><u style="width:'+(max&&val?Math.max(4,val/max*100):0)+'%"></u></span><span class="bv">'+txt+'</span></div>'}
+const rcard=(id,title,inner,sub)=>'<section class="card pad" aria-labelledby="'+id+'"><h2 class="sec" id="'+id+'">'+title+'</h2>'+(sub?'<p class="muted small" style="margin:-4px 0 10px">'+sub+'</p>':'')+inner+'</section>';
+function weeklyText(){
+  const now=tasks().filter(x=>x.g==='now').sort(byUrg),od=S.b.filter(b=>hasMoney(b)&&bal(b)>0&&(b.stage==='Completed'||days(TODAY,balDue(b))<0)),odT=od.reduce((a,b)=>a+bal(b),0),owed=S.b.filter(b=>hasMoney(b)&&bal(b)>0).reduce((a,b)=>a+bal(b),0);
+  const next=S.b.filter(b=>(b.stage==='Confirmed'&&days(TODAY,b.date)>=0&&days(TODAY,b.date)<=7)).map(b=>fmt(b.date)+': '+cust(b.cid).name+', '+lc(b.type)+' at '+b.venue)
+    .concat(S.b.filter(b=>b.stage==='Meeting booked'&&b.appt&&!b.appt.done&&days(TODAY,b.appt.when.slice(0,10))>=0&&days(TODAY,b.appt.when.slice(0,10))<=7).map(b=>fmtWhen(b.appt.when)+': meeting with '+cust(b.cid).name));
+  const newE=S.b.filter(b=>days(b.rec,TODAY)>=0&&days(b.rec,TODAY)<=7).length,rw=S.b.filter(b=>b.rev&&b.rev.sent&&!b.rev.recv).length,rr=S.b.filter(b=>b.rev&&b.rev.recv).length;
+  return 'Saino Events weekly summary\n'+fmtLong(TODAY)+'\n\nNeeds attention: '+now.length+(now.length===1?' thing':' things')+'\n'+(now.slice(0,5).map(x=>'- '+x.title).join('\n')||'- Nothing')+'\n\nMoney (sample amounts)\n- Overdue: '+money(odT)+' across '+od.length+(od.length===1?' event':' events')+'\n- Still to collect in total: '+money(owed)+'\n\nNext 7 days\n'+(next.map(x=>'- '+x).join('\n')||'- Nothing booked')+'\n\nNew enquiries in the last 7 days: '+newE+'\nGoogle reviews: '+rw+' waiting for a reply, '+rr+' received'}
+function csvCell(c){c=String(c==null?'':c);if(/^[=+\-@\t\r]/.test(c))c="'"+c;return /[",\n\r]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}
+const toCsv=rows=>'\ufeff'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n');
+function dlFile(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
+function doExport(kind){
+  if(kind==='events'){dlFile('saino-events-sample.csv',toCsv([['Customer','Event type','Event date','Venue','Guests','Stage','Came from','Enquiry received','Quote','Quote sent','Quote total (sample)','Paid (sample)','Balance (sample)','Google review']].concat(S.b.map(b=>[cust(b.cid).name,b.type,b.date,b.venue,b.guests,b.stage,b.src,b.rec,b.quote?b.quote.ref:'',b.quote?b.quote.sent:'',tot(b)||'',hasMoney(b)?paid(b):'',hasMoney(b)?bal(b):'',b.rev?(b.rev.recv?'Received':b.rev.sent?'Requested':'Scheduled'):''])) ),'text/csv;charset=utf-8')}
+  else if(kind==='customers'){dlFile('saino-customers-sample.csv',toCsv([['Name','Phone','Email','Events','Latest stage']].concat(S.c.map(c=>{const bs=S.b.filter(b=>b.cid===c.id).sort((a,b)=>b.date.localeCompare(a.date));return [c.name,c.phone,c.email,bs.length,bs[0]?bs[0].stage:'']}))),'text/csv;charset=utf-8')}
+  else dlFile('saino-backup-sample.json',JSON.stringify(S,null,1),'application/json');
+  toast('Downloaded. This demo file holds sample data only. A real one would hold customer details, so keep it private.')}
+function vReports(){
+  const bs=S.b.filter(b=>repIn(b.rec)),enq=bs.length,mt=bs.filter(b=>b.appt).length,qt=bs.filter(b=>b.quote).length,bk=bs.filter(bkd).length,lost=bs.filter(b=>b.stage==='Lost').length;
+  const qd=bs.filter(b=>b.quote).map(b=>days(b.rec,b.quote.sent)),avgQ=qd.length?Math.round(qd.reduce((a,x)=>a+x,0)/qd.length):null;
+  const seg='<div class="seg" role="group" aria-label="Time period">'+[['30','Last 30 days'],['90','Last 90 days'],['all','All time']].map(([k,l])=>'<button type="button" data-a="rperiod" data-t="'+k+'" aria-pressed="'+(repP===k)+'">'+l+'</button>').join('')+'</div>';
+  const srcs=SOURCES.map(x=>{const e=bs.filter(b=>b.src===x);return {x,n:e.length,k:e.filter(bkd).length}}).filter(z=>z.n).sort((a,b)=>b.n-a.n),smax=Math.max(1,...srcs.map(z=>z.n));
+  const heard={};bs.forEach(b=>{if(b.form&&b.form.heard)heard[b.form.heard]=(heard[b.form.heard]||0)+1});const hl=Object.keys(heard).sort((a,b)=>heard[b]-heard[a]),hmax=Math.max(1,...hl.map(k=>heard[k]));
+  const typ=TYPES.map(t=>{const e=bs.filter(b=>b.type===t);return {t,n:e.length,k:e.filter(bkd).length}}).filter(z=>z.n).sort((a,b)=>b.n-a.n),tmax=Math.max(1,...typ.map(z=>z.n));
+  const fun=[['Enquiries',enq],['Meeting booked',mt],['Quote sent',qt],['Booked',bk]];
+  const ms=[];let y=D(TODAY).getFullYear(),m=D(TODAY).getMonth()+1;
+  for(let i=0;i<12;i++){const key=y+'-'+String(m).padStart(2,'0');ms.push({l:MON[m-1]+' '+y,bk:S.b.filter(b=>bkd(b)&&b.date.startsWith(key)).length,hd:S.b.filter(b=>b.stage==='Quote sent'&&b.date.startsWith(key)).length});m++;if(m>12){m=1;y++}}
+  const mmax=Math.max(1,...ms.map(z=>z.bk+z.hd)),busiest=ms.reduce((a,z)=>(z.bk+z.hd)>(a.bk+a.hd)?z:a,ms[0]);
+  let sd=TODAY;while(D(sd).getDay()!==6)sd=addDays(sd,1);const sats=[];for(let i=0;i<10;i++){sats.push(sd);sd=addDays(sd,7)}
+  const satRows=sats.map(d=>{const ev=S.b.filter(b=>b.date===d&&(bkd(b)||b.stage==='Quote sent')),st=ev.some(bkd)?'Booked':ev.length?'Held':'Free';
+    return '<div class="row">'+dateBox(d)+'<div class="g"><div class="t">'+(ev.length?ev.map(b=>esc(cust(b.cid).name)).join(', '):'Nothing booked')+'</div><div class="s muted small">'+fmtLong(d)+'</div></div><span class="pill '+(st==='Booked'?'ok':st==='Held'?'warn':'mute')+'">'+st+'</span><button class="btn sm" type="button" data-a="gocal" data-d="'+d+'" aria-label="See '+fmt(d)+' in the calendar">See day</button></div>'}).join('');
+  const od=S.b.filter(b=>hasMoney(b)&&bal(b)>0&&(b.stage==='Completed'||days(TODAY,balDue(b))<0)),odT=od.reduce((a,b)=>a+bal(b),0);
+  const qw=S.b.filter(b=>b.stage==='Quote sent'&&days(b.quote.sent,TODAY)>=3),clash=S.b.filter(b=>live(b)&&shortOf(b).length);
+  const noDay=S.b.filter(b=>b.stage==='Confirmed'&&days(TODAY,b.date)>=0&&days(TODAY,b.date)<=7&&!dayOf(b).setup),pIss=S.b.reduce((a,b)=>a+(b.pack?packSt(b).issues:0),0);
+  const rS=S.b.filter(b=>b.rev&&b.rev.sent).length,rR=S.b.filter(b=>b.rev&&b.rev.recv).length,rW=S.b.filter(b=>b.rev&&b.rev.sent&&!b.rev.recv).length;
+  const chk=(label,hint,n,view,btn)=>'<div class="row"><div class="g"><div class="t">'+label+'</div><div class="s muted small">'+hint+'</div></div><span class="pill '+(n?'warn':'ok')+'">'+(n?n:'All clear')+'</span><button class="btn sm" type="button" data-a="nav" data-v="'+view+'">'+btn+'</button></div>';
+  const none='<p class="muted">No enquiries in this period.</p>';
+  return head('For the owners','Reports','How enquiries become events, what is coming up, and whether the business is running smoothly. Sample data only.',seg).replace('class="page-h"','class="page-h top"')+
+  '<div class="kpis4"><div class="card kpi"><b>'+enq+'</b><span>Enquiries received</span></div><div class="card kpi"><b>'+bk+'</b><span>Became booked events</span></div><div class="card kpi"><b>'+pct(bk,enq)+'</b><span>Booking rate so far</span></div><div class="card kpi"><b>'+(avgQ==null?'n/a':avgQ+(avgQ===1?' day':' days'))+'</b><span>Enquiry to quote, on average</span></div></div>'+
+  '<div class="rgrid">'+
+   rcard('r1','Where enquiries come from',srcs.length?srcs.map(z=>barRow(esc(z.x),z.n,smax,z.n+(z.n===1?' enquiry':' enquiries')+' · '+z.k+' booked ('+pct(z.k,z.n)+')')).join(''):none,'Which channels bring work, and which turn into bookings.')+
+   rcard('r2','From enquiry to booking',enq?fun.map(([l,n])=>barRow(l,n,enq,n+' · '+pct(n,enq))).join('')+'<p class="muted small" style="margin-top:8px">Lost enquiries in this period: '+lost+'. Open ones may still turn into bookings, so the rate rises over time.</p>':none)+
+  '</div><div class="rgrid">'+
+   rcard('r3','Types of event',typ.length?typ.map(z=>barRow(esc(z.t),z.n,tmax,z.n+' · '+z.k+' booked')).join(''):none)+
+   rcard('r4','How website visitors heard about Saino',hl.length?hl.map(k=>barRow(esc(k),heard[k],hmax,String(heard[k]))).join(''):'<p class="muted">Nobody has filled in the website form in this period.</p>','From the “How did you hear about us?” answer on the form.')+
+  '</div>'+
+  rcard('r5','Busy and quiet months',ms.map(z=>barRow(z.l,z.bk+z.hd,mmax,z.bk+' booked'+(z.hd?' · '+z.hd+' held':''))).join('')+(busiest.bk+busiest.hd?'<p class="muted small" style="margin-top:8px">Busiest month ahead: '+busiest.l+'.</p>':''),'Booked events, plus dates held for quotes that are sent but not accepted yet.')+
+  '<div style="height:20px"></div>'+
+  rcard('r6','Saturdays coming up',satRows,'Which weekend dates are taken, held or free to offer.')+
+  '<div style="height:20px"></div>'+
+  rcard('r7','Is everything running smoothly?',
+    chk('Money overdue',od.length?money(odT)+' across '+od.length+(od.length===1?' event':' events')+' (sample amounts)':'Nobody owes a balance past its due date.',od.length,'money','Open money')+
+    chk('Quotes with no answer','Sent three or more days ago.',qw.length,'board','Open events')+
+    chk('Not enough stock','Events that need more decor than you own on that date.',clash.length,'stock','Open stock')+
+    chk('Event-day details missing','Confirmed events in the next 7 days with no set-up time.',noDay.length,'board','Open events')+
+    chk('Missing or damaged decor',pIss?pIss+' item'+(pIss===1?'':'s')+' noted on packing lists.':'Nothing noted after events.',pIss,'today','Open Today')+
+    chk('Google reviews',rS+' asked, '+rR+' received'+(rS?' ('+pct(rR,rS)+')':'')+'.',rW,'money','Open reviews'))+
+  '<div style="height:20px"></div><div class="rgrid">'+
+   rcard('r8','Weekly summary (preview)','<div class="desc">'+esc(weeklyText())+'</div><div class="acts-row" style="margin-top:12px"><button class="btn sm" type="button" data-a="copysum">Copy summary</button><button class="btn sm no-print" type="button" data-a="print">Print this report</button></div><p class="muted small" style="margin-top:8px">In the live system this could arrive by email every Monday [day and time to confirm].</p>')+
+   rcard('r9','Export and backup','<p class="muted small" style="margin-bottom:12px">Download everything, so the business never depends on one system. These files hold customer details in a real system, so keep them private.</p><div class="stack"><button class="btn" style="width:100%" type="button" data-a="export" data-t="events">Download events (CSV)</button><button class="btn" style="width:100%" type="button" data-a="export" data-t="customers">Download customers (CSV)</button><button class="btn" style="width:100%" type="button" data-a="export" data-t="backup">Download full backup (JSON)</button></div>')+
+  '</div>';
+}
+
+function sGoogle(){
+  const g=S.g,cal=gCal(),con=gCon(),pend=gPending();
+  const seg='<div class="seg" role="group" aria-label="Google preview section" style="margin-top:16px"><button type="button" data-a="gtab" data-t="cal" aria-pressed="'+(gtab==='cal')+'">Calendar</button><button type="button" data-a="gtab" data-t="con" aria-pressed="'+(gtab==='con')+'">Contacts</button></div>';
+  let body='';
+  if(gtab==='cal'){
+    const up=cal.filter(x=>x.date>=TODAY).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)),ex=up[0]||cal[0];
+    body='<h3 class="sec" style="margin-top:20px">Coming up on the Saino calendar</h3><div class="pane">'+
+      (up.length?up.slice(0,10).map(x=>'<div class="row ag '+x.kind+'">'+dateBox(x.date)+'<div class="g"><div class="t">'+esc(x.title)+'</div><div class="s muted small">'+(x.time?x.time:'All day')+' · '+esc(x.place)+'</div></div>'+gPill(gStat(x))+'</div>').join(''):'<p class="muted">Nothing coming up.</p>')+
+      gGone().filter(k=>k.key[0]!=='c').map(k=>'<div class="row"><div class="g"><div class="t">'+esc(k.title)+'</div></div>'+gPill('del')+'</div>').join('')+'</div>'+
+      '<p class="legend" style="margin:10px 2px 0"><span>Solid line: confirmed</span><span>Dashed: held, quote sent</span><span>Dotted: meeting</span></p>'+
+      (ex?'<h3 class="sec" style="margin-top:20px">What Google would show for one event</h3><div class="pane"><dl class="kv" style="margin:0 0 10px;grid-template-columns:minmax(80px,28%) minmax(0,1fr)"><dt>Title</dt><dd>'+esc(ex.title)+'</dd><dt>When</dt><dd>'+fmt(ex.date)+(ex.time?' at '+ex.time:', all day')+'</dd><dt>Where</dt><dd>'+esc(ex.place)+'</dd><dt>Guests</dt><dd>None. Customers are not invited unless staff choose to.</dd></dl><p class="lab">Description</p><div class="desc">'+esc(ex.desc)+'</div><p class="muted small" style="margin-top:10px">Money, balances and private notes are never sent. Reminders come from Google Calendar itself, set up for Sajjan and Deepan: [their reminder settings to be confirmed].</p></div>':'');
+  }else{
+    const ex=con.find(x=>x.c.id==='c1')||con[0];
+    body='<h3 class="sec" style="margin-top:20px">Saved under “Saino customers” ('+con.length+')</h3><div class="pane">'+
+      con.slice(0,12).map(x=>'<div class="row"><span class="av" aria-hidden="true">'+esc(x.title.split(/[ ,]/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase())+'</span><div class="g"><div class="t">'+esc(x.title)+'</div><div class="s muted small">'+esc(x.phone)+'</div></div>'+gPill(gStat(x))+'</div>').join('')+
+      (con.length>12?'<p class="muted small" style="margin-top:8px">and '+(con.length-12)+' more</p>':'')+
+      gGone().filter(k=>k.key[0]==='c').map(k=>'<div class="row"><div class="g"><div class="t">'+esc(k.title)+'</div></div>'+gPill('del')+'</div>').join('')+'</div>'+
+      (ex?'<h3 class="sec" style="margin-top:20px">What Google would show for one contact</h3><div class="pane"><dl class="kv" style="margin:0 0 10px;grid-template-columns:minmax(80px,28%) minmax(0,1fr)"><dt>Name</dt><dd>'+esc(ex.title)+'</dd><dt>Phone</dt><dd>'+esc(ex.phone)+'</dd><dt>Email</dt><dd>'+esc(ex.email)+'</dd><dt>Label</dt><dd>Saino customers</dd></dl><p class="lab">Notes</p><div class="desc">'+esc(ex.desc)+'</div><p class="muted small" style="margin-top:10px">Customers whose enquiry was lost are not saved. In the live system, deleting a customer on request would delete the Google contact too [to confirm].</p></div>':'');
+  }
+  const feed=(g.feed||[]);
+  return '<p class="eyebrow">Preview</p><h2 class="ttl" tabindex="-1" id="sh-t">Google Calendar and Contacts</h2><p class="muted">Demo only. Nothing is connected to Google. This shows what the live system would do for Saino.</p>'+
+   '<div class="pane" style="margin-top:16px"><p>'+(g.on?'<span class="pill ok">Sync on</span>':'<span class="pill warn">Sync paused</span>')+' <span class="muted small">Account: [Saino Google account to be confirmed]</span></p><p class="muted small" style="margin:8px 0 10px">'+(g.on?'In the live system, every change would go to Google within moments. The CRM would be the master copy: changes made in Google would not be sent back.':pend+(pend===1?' change is':' changes are')+' waiting. They go out when sync resumes.')+'</p><button class="btn sm" type="button" data-a="gtoggle">'+(g.on?'Pause sync (demo)':'Resume sync')+'</button></div>'+
+   seg+body+
+   '<h3 class="sec" style="margin-top:20px">Recent sync activity</h3><div class="pane">'+(feed.length?feed.slice(0,8).map(f=>'<div class="row"><div class="g small">'+esc(f.t)+'</div><span class="muted small">'+fmt(f.d)+'</span></div>').join(''):'<p class="muted small">Nothing yet. Book a meeting or confirm an event and it shows up here.</p>')+'</div>'+
+   '<div class="blk"><button class="btn" type="button" data-a="close">Close</button></div>'}
+
+/* ================= ui state ================= */
+let evMode=(()=>{try{return localStorage.getItem('saino-crm-v2-inbox-evmode')||'board'}catch(e){return 'board'}})(),evStage='All',evSort='date';
+let showAll=false,view=(location.hash.slice(1)||'today'),typeF='All',q='',selDate=TODAY,cal={y:2026,m:11},invDate='2026-11-28',catF='All',moneyTab='pay',chk='';
+let calMode=(window.innerWidth<=860?'list':'grid');
+let gtab='cal',resetAsk=false,mailAlt='';
+let sheet=null,M=null,clientView=null,lostAsk=false,opener=null,lastKey='';
+const VIEWS_META=[['today','Today','home'],['board','Events','board'],['calendar','Calendar','cal'],['stock','Stock','box'],['people','Customers','users'],['money','Money','pound'],['reports','Reports','chart']];
+function counts(){const t=tasks();return{today:t.filter(x=>x.g==='now').length,board:S.b.filter(live).length,money:S.b.filter(b=>hasMoney(b)&&bal(b)>0&&(b.stage==='Completed'||days(TODAY,balDue(b))<0)).length}}
+function drawNav(){const n=counts();
+  const btn=([k,l,ic])=>'<button type="button" data-a="nav" data-v="'+k+'"'+(view===k?' aria-current="page"':'')+'>'+ico(ic)+'<span>'+l+'</span>'+(n[k]?'<span class="n" aria-label="'+n[k]+' need attention">'+n[k]+'</span>':'')+'</button>';
+  $('#nav').innerHTML=VIEWS_META.map(btn).join('');
+  const TAB=['today','board','calendar','stock','money'];
+  $('#tabbar').innerHTML=VIEWS_META.filter(m=>TAB.includes(m[0])).map(btn).join('')+'<button type="button" data-a="open" data-k="more"'+(['people','reports'].includes(view)?' aria-current="page"':'')+'>'+ico('dots')+'<span>More</span></button>';
+}
+function clearToast(){if(Date.now()-(toast.at||0)>400)$('#toast').classList.remove('on')}
+function toast(t){toast.at=Date.now();const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),4200)}
+const openerSel=e=>{if(!e||!e.dataset||!e.dataset.a)return null;return '[data-a="'+e.dataset.a+'"]'+['k','id','d','v'].filter(x=>e.dataset[x]!==undefined).map(x=>'[data-'+x+'="'+e.dataset[x]+'"]').join('')};
+const open=(k,id,back)=>{clearToast();if(!sheet)opener=openerSel(document.activeElement);sheet={k,id:id||'',back:back||null};lostAsk=false;
+  if(k==='bal'){const b=book(id);M={ch:'WhatsApp',text:msgBal(b,'WhatsApp')}}
+  if(k==='rev'){const b=book(id);M={ch:'WhatsApp',text:msgRev(b,'WhatsApp')}}
+  if(k==='msg'){const b=book(id),ch=b.form&&b.form.contactBy==='Email'?'Email':'WhatsApp';M={ch,text:msgGen(b,ch)}}
+  if(k!=='demo')resetAsk=false;
+  render()};
+const closeSheet=()=>{if(sheet&&sheet.back){const bk=sheet.back;sheet={k:bk.k,id:bk.id,back:null}}else sheet=null;lostAsk=false;render();if(!sheet&&opener){const o=document.querySelector(opener);if(o)o.focus({preventScroll:true})}};
+
+/* ================= views ================= */
+function head(eyebrow,title,sub,extra){return '<div class="page-h"><div><p class="eyebrow">'+eyebrow+'</p><h1>'+title+'</h1>'+(sub?'<p class="sub">'+sub+'</p>':'')+'</div><div class="acts-row">'+(extra||'')+'</div></div>'}
+function taskRow(x){const late=x.urg===0&&x.g==='now';
+  return '<li class="task'+(late?' late':'')+(x.g==='wait'?' wait':'')+'"><span class="mark" aria-hidden="true"></span><div><div class="t">'+esc(x.title)+(late?' <span class="pill bad">Overdue</span>':x.g==='now'&&x.urg===1?' <span class="pill warn">Today</span>':'')+'</div><div class="s">'+esc(x.sub)+'</div></div>'+
+  '<div class="acts">'+(x.g==='now'?'<button class="btn quiet sm" type="button" data-a="snooze" data-id="'+x.b.id+'" aria-label="Remind me in 2 days: '+esc(x.title)+'">Remind in 2 days</button>':'')+(x.alt?'<button class="btn sm" type="button" data-a="open" data-k="'+x.alt.k+'" data-id="'+x.b.id+'">'+x.alt.l+'</button>':'')+
+  '<button class="btn '+(x.g==='now'&&x.btn!=='Open'?'pri':'')+' sm" type="button" data-a="'+(x.k==='held'?'held':'open')+'" data-k="'+(x.k==='held'?'':x.k)+'" data-id="'+x.b.id+'">'+x.btn+'</button></div></li>'}
+function dateCheck(){
+  let out='<p class="muted small">Pick a date to see if you can take another booking.</p>';
+  if(chk){const ev=S.b.filter(b=>b.date===chk&&b.stage!=='Lost'),u=usage(chk),sh=ITEMS.filter(i=>u[i.id].conf+u[i.id].held>avail(i));
+    const lines=ev.map(b=>esc(cust(b.cid).name)+' ('+b.stage.toLowerCase()+')');
+    out=(sh.length?'<div class="warnbox">Not enough stock on '+fmt(chk)+': '+sh.map(i=>esc(i.name)).join(', ')+'.</div>':'<div class="okbox">'+(ev.length?'Stock is fine on ':'Nothing booked on ')+fmt(chk)+'.</div>')+
+      (ev.length?'<p class="small" style="margin-top:10px">Already that day: '+lines.join(', ')+'.</p>':'')+'<button class="btn sm" style="margin-top:10px" type="button" data-a="gocal" data-d="'+chk+'">See that day</button>'}
+  return '<section class="card pad" aria-labelledby="chk-h"><h2 class="sec" id="chk-h">Can we take a date?</h2><div class="field" style="margin-bottom:10px"><label for="chk">Event date</label><input id="chk" type="date" value="'+chk+'"></div><div aria-live="polite">'+out+'</div></section>'}
+function vToday(){
+  const T=tasks(),now=T.filter(x=>x.g==='now').sort(byUrg),wait=T.filter(x=>x.g==='wait').sort(byUrg),soon=T.filter(x=>x.g==='soon'&&x.soon!==false).sort((a,b)=>a.date.localeCompare(b.date));
+  const owed=S.b.filter(b=>hasMoney(b)&&bal(b)>0),owedT=owed.reduce((a,b)=>a+bal(b),0);
+  const sum=now.length?now.length+(now.length===1?' thing needs':' things need')+' you today. '+(wait.length?wait.length+(wait.length===1?' is':' are')+' waiting on other people.':''):'Nothing needs you right now. '+wait.length+' waiting on other people.';
+  const cnt=st=>S.b.filter(b=>b.stage===st).length;
+  return head(fmtLong(TODAY),(new Date().getHours()<12?'Good morning':new Date().getHours()<18?'Good afternoon':'Good evening'),sum,'')+
+  '<nav class="strip" aria-label="Where every enquiry stands">'+STAGES.map(st=>'<button type="button" data-a="board" data-st="'+st+'"><b>'+cnt(st)+'</b><span>'+(st==='New enquiry'?'New':st==='Meeting booked'?'Meetings':st==='Quote sent'?'Quotes':st)+'</span></button>').join('')+'</nav>'+
+  '<div class="today"><div>'+
+   '<section class="card" aria-labelledby="g1"><div class="pad" style="padding-bottom:6px"><h2 class="sec" id="g1">Needs you</h2></div><ul style="list-style:none;margin:0;padding:0">'+(now.length?(showAll?now:now.slice(0,6)).map(taskRow).join(''):'<li class="empty">All clear. Enjoy the quiet.</li>')+'</ul>'+(now.length>6?'<div class="pad" style="padding-top:6px"><button class="btn sm" type="button" data-a="more" aria-expanded="'+showAll+'">'+(showAll?'Show fewer':'Show '+(now.length-6)+' more')+'</button></div>':'')+'</section>'+
+   '<section class="card" aria-labelledby="g2" style="margin-top:20px"><div class="pad" style="padding-bottom:6px"><h2 class="sec" id="g2">Waiting on other people</h2><p class="muted small" style="margin-top:-4px">Nothing to do here. The system moves these on when the client acts.</p></div><ul style="list-style:none;margin:0;padding:0">'+(wait.length?wait.map(taskRow).join(''):'<li class="empty">Nothing waiting.</li>')+'</ul></section>'+
+  '</div><aside class="stack">'+dateCheck()+
+   '<section class="card pad" aria-labelledby="g3"><h2 class="sec" id="g3">Coming up this week</h2>'+(soon.length?soon.slice(0,5).map(x=>'<div class="row">'+dateBox(x.date)+'<div class="g"><div class="t">'+esc(x.title)+'</div><div class="s muted small">'+esc(x.sub)+'</div></div></div>').join(''):'<p class="muted small">No events or meetings in the next 7 days.</p>')+'</section>'+
+   '<section class="card pad" aria-labelledby="g4"><h2 class="sec" id="g4">Money</h2><p style="font:600 30px/1.1 var(--body)">'+money(owedT)+'</p><p class="muted small">still to collect across '+owed.length+' events (sample amounts)</p><button class="btn sm" style="margin-top:12px" type="button" data-a="nav" data-v="money">Open money</button></section>'+
+  '</aside></div>';
+}
+function nextText(b){
+  if(b.stage==='New enquiry')return 'Book a meeting';
+  if(b.stage==='Meeting booked')return b.appt.done?'Send the quote':'Meeting '+fmtWhen(b.appt.when);
+  if(b.stage==='Quote sent')return qExp(b)?'Quote expired':'Waiting for the client';
+  if(b.stage==='Confirmed')return bal(b)>0?'Balance '+amtS(b,bal(b))+' due '+fmt(balDue(b)):'Fully paid';
+  if(b.stage==='Completed'){if(bal(b)>0)return 'Collect '+amtS(b,bal(b));return !b.rev?'Done':b.rev.recv?'Review received':b.rev.sent?'Review requested':'Review request '+inN(days(TODAY,b.rev.due))}
+  return '';
+}
+function evList(f){
+  const ord=st=>STAGES.indexOf(st)<0?9:STAGES.indexOf(st);
+  const rows=S.b.filter(b=>f(b)&&(evStage==='All'?b.stage!=='Lost':b.stage===evStage)).sort(
+    {date:(a,b)=>{const au=a.date>=TODAY,bu=b.date>=TODAY;if(au!==bu)return au?-1:1;return au?a.date.localeCompare(b.date):b.date.localeCompare(a.date)},stage:(a,b)=>ord(a.stage)-ord(b.stage)||a.date.localeCompare(b.date),name:(a,b)=>cust(a.cid).name.localeCompare(cust(b.cid).name),recent:(a,b)=>b.rec.localeCompare(a.rec)}[evSort]);
+  const tb='<div class="toolbar"><div class="field"><label for="evst">Show</label><select id="evst">'+[['All','All open and finished events'],...STAGES.map(x=>[x,x]),['Lost','Lost enquiries']].map(([v,l])=>'<option value="'+v+'"'+(evStage===v?' selected':'')+'>'+l+'</option>').join('')+'</select></div>'+
+    '<div class="field"><label for="evsort">Sort by</label><select id="evsort">'+[['date','Event date, upcoming first'],['stage','Stage'],['name','Customer name'],['recent','Newest enquiry first']].map(([v,l])=>'<option value="'+v+'"'+(evSort===v?' selected':'')+'>'+l+'</option>').join('')+'</select></div>'+
+    '<p class="muted" style="margin:0 0 10px" aria-live="polite">'+rows.length+(rows.length===1?' event':' events')+'</p></div>';
+  return tb+'<div class="card tbl"><div class="tr hd evl"><span>Customer</span><span>Event</span><span>Date</span><span>Stage</span><span>What happens next</span></div>'+
+   (rows.length?rows.map(b=>{const sh=shortOf(b).length,od=hasMoney(b)&&bal(b)>0&&(b.stage==='Completed'||days(TODAY,balDue(b))<0);
+     return '<button class="tr evl" type="button" data-a="open" data-k="b" data-id="'+b.id+'"><span class="ea"><b>'+esc(cust(b.cid).name)+'</b><span class="muted small" style="display:block">'+esc(b.venue)+'</span></span><span class="eb">'+esc(b.type)+'<span class="phd"> · '+fmt(b.date)+'</span></span><span class="ec">'+fmt(b.date)+'</span><span class="ed">'+stagePill(b.stage)+'</span><span class="ee"><span style="display:block">'+esc(nextText(b))+'</span><span class="muted small" style="display:block">'+stepText(b)+'</span>'+(sh||od?'<span style="display:block;margin-top:4px">'+(sh?'<span class="pill bad">Stock short</span> ':'')+(od?'<span class="pill bad">Money overdue</span>':'')+'</span>':'')+'</span></button>'}).join(''):'<p class="empty">No events match.</p>')+'</div>'}
+function vBoard(){
+  const f=b=>typeF==='All'||b.type===typeF;
+  const lanes=STAGES.map(st=>{const rows=S.b.filter(b=>b.stage===st&&f(b)).sort((a,b)=>a.date.localeCompare(b.date));
+    return '<section class="lane" aria-label="'+st+'"><h3><span>'+st+'</span><span>'+rows.length+'</span></h3>'+(rows.length?rows.map(b=>{
+      const sh=shortOf(b).length,od=hasMoney(b)&&bal(b)>0&&(b.stage==='Completed'||days(TODAY,balDue(b))<0);
+      return '<button class="ecard" type="button" data-a="open" data-k="b" data-id="'+b.id+'"><span class="t">'+esc(cust(b.cid).name)+'</span><span class="s">'+esc(b.type)+' · '+fmt(b.date)+'</span><span class="s">'+esc(b.venue)+'</span>'+(b.form?'<span class="s">'+(b.form.guestsBand?esc(b.form.guestsBand)+' guests · ':'')+'Budget they gave: '+esc(b.form.budget)+(b.form.flex?' · date flexible':'')+'</span>':'')+railHTML(b)+'<span class="s">'+stepText(b)+'</span><span class="nx">'+esc(nextText(b))+'</span>'+(sh||od?'<span>'+(sh?'<span class="pill bad">Stock short</span> ':'')+(od?'<span class="pill bad">Money overdue</span>':'')+'</span>':'')+'</button>'}).join(''):'<p class="muted small" style="padding:8px 4px">Nothing here.</p>')+'</section>'}).join('');
+  const seg='<div class="seg" role="group" aria-label="How to view events"><button type="button" data-a="evmode" data-t="board" aria-pressed="'+(evMode==='board')+'">'+ico('board','s')+'Board</button><button type="button" data-a="evmode" data-t="list" aria-pressed="'+(evMode==='list')+'">'+ico('list','s')+'List</button></div>';
+  const newBtn='<button class="btn pri evnew" type="button" data-a="open" data-k="new">'+ico('plus','s')+'New enquiry</button>';
+  const chips='<div class="chips" role="group" aria-label="Filter by event type">'+['All'].concat(TYPES).map(t=>'<button type="button" data-a="type" data-t="'+t+'" aria-pressed="'+(typeF===t)+'">'+t+'</button>').join('')+'</div>';
+  if(evMode==='list')return head('All events','Events','Every enquiry and booking in one list. Switch to Board to see them by stage.',seg)+chips+evList(f);
+  return head('All events','Events','Every enquiry and booking, from first message to Google review.',seg)+chips+
+  '<p class="muted small" style="margin:-4px 0 14px;max-width:60ch">Cards move on by themselves when you do the step. You never drag them. Each bar shows how far an event has come: enquiry, meeting, quote, confirmed, paid, review.</p><div class="board">'+lanes+'</div>';
+}
+function vCalendar(){
+  const {y,m}=cal,start=(new Date(y,m-1,1).getDay()+6)%7,dim=new Date(y,m,0).getDate();
+  let cells=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(w=>'<div class="h">'+w+'</div>').join(''),lrows='';
+  for(let i=0;i<start;i++)cells+='<div class="d out"></div>';
+  for(let d=1;d<=dim;d++){const s=iso(y,m,d),ev=S.b.filter(b=>b.date===s&&b.stage!=='Lost'),mt=S.b.filter(b=>b.stage==='Meeting booked'&&b.appt&&!b.appt.done&&b.appt.when.slice(0,10)===s);
+    const cl=b=>shortOf(b).length?'x':b.stage==='Quote sent'?'q':b.stage==='New enquiry'?'m':'';
+    const all=ev.map(b=>({t:esc(cust(b.cid).name),c:cl(b)})).concat(mt.map(b=>({t:'Meeting '+b.appt.when.slice(11),c:'m'})));
+    cells+='<button type="button" class="d'+(s===TODAY?' today':'')+(s===selDate?' sel':'')+'" data-a="sel" data-d="'+s+'" aria-label="'+fmt(s)+(all.length?', '+all.length+(all.length===1?' item':' items'):', nothing booked')+'"><span class="n">'+d+'</span>'+all.slice(0,2).map(e=>'<span class="ev '+e.c+'">'+e.t+'</span>').join('')+(all.length>2?'<span class="ev m">+'+(all.length-2)+' more</span>':'')+'<span class="dd">'+all.map(e=>'<i class="'+e.c+'"></i>').join('')+'</span></button>';
+    ev.forEach(b=>{lrows+='<button class="tr" style="grid-template-columns:auto minmax(0,1fr) auto" type="button" data-a="open" data-k="b" data-id="'+b.id+'">'+dateBox(s)+'<span><b>'+esc(cust(b.cid).name)+'</b><span class="muted small" style="display:block">'+esc(b.type)+' · '+esc(b.venue)+'</span></span>'+stagePill(b.stage)+'</button>'});
+    mt.forEach(b=>{lrows+='<button class="tr" style="grid-template-columns:auto minmax(0,1fr) auto" type="button" data-a="open" data-k="b" data-id="'+b.id+'">'+dateBox(s)+'<span><b>Meeting with '+esc(cust(b.cid).name)+'</b><span class="muted small" style="display:block">'+b.appt.when.slice(11)+' · '+esc(b.appt.place.toLowerCase())+'</span></span><span class="pill mute">Meeting</span></button>'});
+  }
+  const tail=(7-((start+dim)%7))%7;for(let i=0;i<tail;i++)cells+='<div class="d out"></div>';
+  const ev=S.b.filter(b=>b.date===selDate&&b.stage!=='Lost'),mt=S.b.filter(b=>b.stage==='Meeting booked'&&b.appt&&!b.appt.done&&b.appt.when.slice(0,10)===selDate),u=usage(selDate);
+  const used=ITEMS.filter(i=>u[i.id].conf+u[i.id].held>0);
+  const day='<section class="card pad" style="margin-top:18px" aria-labelledby="dayh"><h2 class="sec" id="dayh">'+fmtLong(selDate)+'</h2>'+
+   (ev.length||mt.length?ev.map(b=>'<div class="row"><div class="g"><div class="t">'+esc(cust(b.cid).name)+' · '+esc(b.type)+'</div><div class="s muted small">'+esc(b.venue)+' · '+b.guests+' guests</div></div>'+stagePill(b.stage)+'<button class="btn sm" type="button" data-a="open" data-k="b" data-id="'+b.id+'">Open</button></div>').join('')+mt.map(b=>'<div class="row"><div class="g"><div class="t">Meeting with '+esc(cust(b.cid).name)+'</div><div class="s muted small">'+b.appt.when.slice(11)+' · '+esc(b.appt.place.toLowerCase())+'</div></div><button class="btn sm" type="button" data-a="open" data-k="b" data-id="'+b.id+'">Open</button></div>').join(''):'<p class="muted">Nothing booked. This date is free.</p>')+
+   (used.length?'<h3 class="sec" style="margin-top:18px">Decor out that day</h3>'+used.map(i=>{const x=u[i.id],n=x.conf+x.held;return '<div class="row"><div class="g"><span class="t">'+esc(i.name)+'</span></div><span class="small muted">'+n+' of '+avail(i)+'</span>'+(n>avail(i)?'<span class="pill bad">Short by '+(n-avail(i))+'</span>':'')+'</div>'}).join(''):'')+
+   '<div style="margin-top:14px"><button class="btn sm" type="button" data-a="newfor" data-d="'+selDate+'">'+ico('plus','s')+'New enquiry for this date</button></div></section>';
+  const seg='<div class="seg" role="group" aria-label="Calendar layout"><button type="button" data-a="cmode" data-t="grid" aria-pressed="'+(calMode==='grid')+'">Month</button><button type="button" data-a="cmode" data-t="list" aria-pressed="'+(calMode==='list')+'">List</button></div>';
+  const body=calMode==='grid'?'<div class="cal">'+cells+'</div><div class="legend"><span><i></i>Confirmed</span><span><i class="q"></i>Quote sent, stock held</span><span><i class="m"></i>Enquiry or meeting</span><span><i class="x"></i>Not enough stock</span></div>'+day:
+    '<div class="card tbl clist">'+(lrows||'<p class="empty">Nothing on this month.</p>')+'</div>';
+  return head('Calendar',MON[m-1]+' '+y,calMode==='grid'?'Tap a day to see what is on and what stock is out.':'Everything this month, in date order.','<button class="btn sm" type="button" data-a="open" data-k="google">Google sync preview</button>'+seg+'<button class="ib" type="button" data-a="cal" data-n="-1" aria-label="Previous month">'+ico('left')+'</button><button class="ib" type="button" data-a="cal" data-n="1" aria-label="Next month">'+ico('right')+'</button>')+body;
+}
+function vStock(){
+  const u=usage(invDate),cats=['All'].concat([...new Set(ITEMS.map(i=>i.cat))]);
+  const rows=ITEMS.filter(i=>catF==='All'||i.cat===catF).map(i=>{const x=u[i.id],used=x.conf+x.held,left=avail(i)-used;
+    return '<button class="tr stock" type="button" data-a="open" data-k="i" data-id="'+i.id+'"><span><b>'+esc(i.name)+'</b><span class="muted small" style="display:block">'+i.cat+(i.rep?' · '+i.rep+' in repair':'')+'</span></span><span class="num c2">'+i.total+'</span><span class="num c3">'+used+'</span><span class="num"><b'+(left<0?' style="color:var(--bad)"':'')+'>'+left+'</b> <span class="muted small">free</span></span><span class="meter c3" aria-hidden="true"><u class="'+(left<0?'o':'')+'" style="display:block;width:'+Math.min(100,used/Math.max(1,avail(i))*100)+'%"></u></span><span>'+(left<0?'<span class="pill bad">Short</span>':i.rep?'<span class="pill warn">'+i.rep+' in repair</span>':'<span class="pill ok">OK</span>')+'</span></button>'}).join('');
+  const evs=S.b.filter(b=>b.date===invDate&&b.stage!=='Lost');
+  return head('What you own','Stock','Pick a day to see what you own, what is out and what is free.','<button class="btn pri" type="button" data-a="open" data-k="iedit">'+ico('plus','s')+'Add an item</button>')+
+  '<div class="toolbar"><div class="field"><label for="invd">Check a date</label><input id="invd" type="date" value="'+invDate+'"></div><div class="field"><label for="catf">Type of decor</label><select id="catf">'+cats.map(c=>'<option'+(c===catF?' selected':'')+'>'+c+'</option>').join('')+'</select></div></div>'+
+  '<p class="muted" style="margin:-4px 0 14px">'+(evs.length?'On '+fmt(invDate)+': '+evs.map(b=>esc(cust(b.cid).name)+' ('+b.stage.toLowerCase()+')').join(', ')+'.':'Nothing booked on '+fmt(invDate)+', so everything is free.')+'</p>'+
+  '<div class="card tbl"><div class="tr hd stock"><span>Item</span><span class="num c2">Own</span><span class="num c3">Out</span><span class="num">Free</span><span class="c3"></span><span>Status</span></div>'+rows+'</div><p class="muted small" style="margin-top:12px">“Out” includes stock held for quotes that are sent but not accepted yet. This is a sample stock list. Sajjan and Deepan will give the real one. Items marked “in repair” are not counted as free.</p>';
+}
+function vPeople(){
+  const rows=S.c.filter(c=>!q||norm(c.name+' '+c.email).includes(norm(q)));
+  return head('People','Customers','Everyone who has asked you for a quote, and everything you did for them.','<span class="chip">'+S.c.length+' on file</span>')+
+  '<div class="toolbar"><div class="field" style="min-width:260px"><label for="q">Search customers</label><input id="q" type="search" value="'+esc(q)+'" placeholder="Name or email" autocomplete="off"></div></div>'+
+  '<div class="card tbl"><div class="tr hd cust"><span>Customer</span><span>Events</span><span>Latest</span><span>Phone</span></div>'+
+  (rows.map(c=>{const bs=S.b.filter(b=>b.cid===c.id).sort((a,b)=>b.date.localeCompare(a.date));
+    return '<button class="tr cust" type="button" data-a="open" data-k="c" data-id="'+c.id+'"><span><b>'+esc(c.name)+'</b><span class="muted small" style="display:block">'+esc(c.email)+'</span></span><span>'+bs.length+(bs.length>1?' · <span class="pill gold">Repeat</span>':'')+'</span><span class="c3">'+(bs[0]?stagePill(bs[0].stage):'')+'</span><span class="c4 muted">'+esc(c.phone)+'</span></button>'}).join('')||'<p class="empty">'+(S.c.length?'No one matches.':'No customers yet. They appear here when you add an enquiry.')+'</p>')+'</div>';
+}
+function payPill(b){const bl=bal(b);if(bl===0)return '<span class="pill ok">Paid in full</span>';
+  if(b.stage==='Completed'||balDue(b)<TODAY)return '<span class="pill bad">Overdue</span>';return '<span class="pill warn">Due '+inN(days(TODAY,balDue(b)))+'</span>'}
+function revPill(b){const r=b.rev;if(r.recv)return '<span class="pill ok">Review received</span>';if(!r.sent)return '<span class="pill gold">Goes out '+inN(days(TODAY,r.due))+'</span>';return '<span class="pill warn">No review yet</span>'}
+function vMoney(){
+  const seg='<div class="seg" role="group" aria-label="Money section"><button type="button" data-a="mtab" data-t="pay" aria-pressed="'+(moneyTab==='pay')+'">Payments</button><button type="button" data-a="mtab" data-t="rev" aria-pressed="'+(moneyTab==='rev')+'">Google reviews</button></div>';
+  if(moneyTab==='pay'){const rows=S.b.filter(hasMoney).sort((a,b)=>b.date.localeCompare(a.date)),T=rows.reduce((a,b)=>a+tot(b),0),Pd=rows.reduce((a,b)=>a+paid(b),0);
+    return head('Who owes what','Money','Who has paid, who owes, and asking for the balance.',seg).replace('class="page-h"','class="page-h top"')+
+    '<div class="kpis"><div class="card kpi"><b>'+money(T)+'</b><span>Total of confirmed and finished events</span></div><div class="card kpi"><b>'+money(Pd)+'</b><span>Received</span></div><div class="card kpi"><b>'+money(rows.reduce((a,b)=>a+bal(b),0))+'</b><span>Still to collect</span></div></div>'+
+    '<div class="card tbl"><div class="tr hd pay"><span class="pc">Customer</span><span class="pe">Event date</span><span class="num pt">Total</span><span class="num pp">Paid</span><span class="num pb">Balance</span><span class="ps">Status</span><span class="pa"></span></div>'+
+    (rows.length?'':'<p class="empty">No confirmed bookings with money yet. They appear here once a client accepts a quote.</p>')+rows.map(b=>'<div class="tr pay"><span class="pc"><button class="link" style="color:var(--ink);text-decoration:none;font-weight:600;text-align:left" type="button" data-a="open" data-k="b" data-id="'+b.id+'">'+esc(cust(b.cid).name)+'</button><span class="muted small" style="display:block">'+esc(b.type)+'<span class="nd"> · '+fmt(b.date)+'</span></span></span><span class="pe small">'+fmt(b.date)+'</span><span class="num pt">'+money(tot(b))+'</span><span class="num pp">'+money(paid(b))+'</span><span class="num pb"><b>'+money(bal(b))+'</b></span><span class="ps">'+payPill(b)+'</span><span class="pm small muted">Total '+money(tot(b))+' · Paid '+money(paid(b))+' · Balance <b style="color:var(--ink)">'+money(bal(b))+'</b></span><span class="pa acts-row"><button class="btn sm" type="button" data-a="open" data-k="pay" data-id="'+b.id+'">Record payment</button>'+(bal(b)>0?'<button class="btn sm pri" type="button" data-a="open" data-k="bal" data-id="'+b.id+'">Request balance</button>':'')+'</span></div>').join('')+'</div>'+
+    '<p class="muted small" style="margin-top:12px">All amounts here are sample figures for the demo. In the real system you type in each payment when it arrives. The balance and the status update on their own.</p>'}
+  const rows=S.b.filter(b=>b.rev).sort((a,b)=>b.date.localeCompare(a.date)),w=rows.filter(b=>!b.rev.sent).length,o=rows.filter(b=>b.rev.sent&&!b.rev.recv).length,g=rows.filter(b=>b.rev.recv).length;
+  return head('After the event','Google reviews','Requests go out a few days after each event.',seg).replace('class="page-h"','class="page-h top"')+
+  '<div class="toolbar"><div class="field"><label for="revd">Send the request</label><select id="revd">'+[1,3,7].map(n=>'<option value="'+n+'"'+(S.cfg.revDays===n?' selected':'')+'>'+n+(n===1?' day':' days')+' after the event</option>').join('')+'</select></div></div>'+
+  '<div class="kpis"><div class="card kpi"><b>'+w+'</b><span>Waiting to be sent</span></div><div class="card kpi"><b>'+o+'</b><span>Sent, no review yet</span></div><div class="card kpi"><b>'+g+'</b><span>Review received</span></div></div>'+
+  '<div class="card tbl"><div class="tr hd rev"><span class="rc">Customer</span><span class="rd">Event date</span><span class="rq">Request</span><span class="rs">Review</span><span class="ra"></span></div>'+
+  (rows.map(b=>{const r=b.rev;return '<div class="tr rev"><span class="rc"><button class="link" style="color:var(--ink);text-decoration:none;font-weight:600;text-align:left" type="button" data-a="open" data-k="b" data-id="'+b.id+'">'+esc(cust(b.cid).name)+'</button><span class="muted small" style="display:block">'+esc(b.type)+'<span class="nd"> · '+fmt(b.date)+'</span></span></span><span class="rd small">'+fmt(b.date)+'</span><span class="rq small">'+(r.sent?'Sent '+fmt(r.sent)+(r.n?', reminded '+r.n+'×':''):'Will go out '+fmt(r.due))+'</span><span class="rs">'+revPill(b)+'</span><span class="ra acts-row">'+(r.recv?'':'<button class="btn sm" type="button" data-a="open" data-k="rev" data-id="'+b.id+'">'+(r.sent?'Send again':'Send now')+'</button>'+(r.sent?'<button class="btn sm pri" type="button" data-a="recv" data-id="'+b.id+'">Mark as received</button>':''))+'</span></div>'}).join('')||'<p class="empty">Reviews start here once an event is finished.</p>')+'</div>'+
+  '<p class="muted small" style="margin-top:12px">Not yet confirmed: whether the real system can see a new Google review by itself. That needs access to Saino’s Google Business Profile, which has not been checked yet. Until then, Saino ticks “Mark as received”.</p>';
+}
+const VIEWS={today:vToday,board:vBoard,calendar:vCalendar,stock:vStock,people:vPeople,money:vMoney,reports:vReports};
+
+/* ================= sheets ================= */
+function msgBal(b,ch){const nm=greetN(cust(b.cid)),body='thank you again for choosing Saino Events. The remaining balance for your '+lc(b.type)+' on '+fmt(b.date)+' is '+money(bal(b))+'. Payment details: [bank or online payment details from Sajjan and Deepan]. Please message us if you have any questions.';
+  return ch==='Email'?'Subject: Balance for your '+lc(b.type)+'\n\nDear '+nm+',\n\nThank you again'+body.slice(body.indexOf(' for choosing'))+'\n\nKind regards,\nSaino Events':'Hello '+nm+', '+body}
+function msgRev(b,ch){const nm=greetN(cust(b.cid)),body='thank you for choosing Saino Events for your '+lc(b.type)+'. If you were happy with the decor, would you leave us a short Google review? It takes a minute and helps other families find us: [Google review link]';
+  return ch==='Email'?'Subject: How was your '+lc(b.type)+'?\n\nDear '+nm+',\n\nThank you'+body.slice(body.indexOf(' for choosing'))+'.\n\nKind regards,\nSaino Events':'Hello '+nm+', '+body+'.'}
+function msgGen(b,ch){const nm=greetN(cust(b.cid)),body=(b.stage==='New enquiry'?'thank you for your enquiry about your '+lc(b.type)+' on '+fmt(b.date)+'. We would love to help. When would suit you for a short call, or a visit to the venue?':'thank you for your message about your '+lc(b.type)+' on '+fmt(b.date)+'. ');
+  return ch==='Email'?'Subject: Your '+lc(b.type)+' on '+fmt(b.date)+'\n\nDear '+nm+',\n\nThank you'+body.slice(body.indexOf(' for your'))+'\n\nKind regards,\nSaino Events':'Hello '+nm+', '+body+(b.stage==='New enquiry'?' Kind regards, Saino Events':'')}
+function nextCard(b){const c=cust(b.cid),n=esc(c.name);
+  const btn=(a,k,l,p)=>'<button class="btn '+(p===false?'':'pri')+'" type="button" data-a="'+a+'" data-k="'+k+'" data-id="'+b.id+'">'+l+'</button>';
+  if(b.stage==='New enquiry')return '<div class="next"><p class="k">Next: book a meeting</p><p class="muted">'+(b.replied?'You replied on '+fmt(b.replied)+'. ':'Reply to '+n+', then ')+'agree a time for a meeting. Saving the meeting moves this on by itself.</p><div class="acts-row">'+btn('open','msg',b.replied?'Send another message':'Send a message',false)+btn('open','appt','Book a meeting')+'</div></div>';
+  if(b.stage==='Meeting booked')return '<div class="next"><p class="k">'+(b.appt.done?'Next: send the quote':'Meeting '+fmtWhen(b.appt.when))+'</p><p class="muted">'+(b.appt.done?'The meeting has been held. Build the quote and send it online.':esc(b.appt.place)+'. Booked by '+esc(vl(b.appt.via))+'.')+'</p>'+(b.appt.done?btn('open','quote','Prepare quote'):(b.appt.when.slice(0,10)>TODAY?'<p class="muted small">You can mark it as held on or after the day of the meeting.</p>'+btn('open','appt','Change the meeting',false):btn('held','','Mark as held')))+'</div>';
+  if(b.stage==='Quote sent'&&qExp(b))return '<div class="next"><p class="k">Quote '+esc(b.quote.ref)+' has expired</p><p class="muted">It was valid until '+fmt(qUntil(b))+(b.date<TODAY?' and the event date has passed':'')+'. The stock it held is free again. Send a new quote, or mark the enquiry as lost.</p>'+btn('open','quote','Prepare a new quote')+'</div>';
+  if(b.stage==='Quote sent')return '<div class="next"><p class="k">Quote '+esc(b.quote.ref)+' is with '+n+'</p><p class="muted">Sent '+fmt(b.quote.sent)+', valid until '+fmt(qUntil(b))+'. When they accept it online, this event is confirmed automatically and the stock is reserved.</p>'+btn('client','',"See what the client sees",false)+'</div>';
+  if(b.stage==='Confirmed')return '<div class="next"><p class="k">Confirmed</p><p class="muted">Stock is reserved for '+fmt(b.date)+'.'+(b.quote&&b.quote.acc?' '+n+' accepted quote '+esc(b.quote.ref)+' on '+fmt(b.quote.acc)+'.':'')+'</p></div>';
+  if(b.stage==='Completed')return '<div class="next"><p class="k">Event finished</p><p class="muted">'+(bal(b)>0?'There is still '+money(bal(b))+' to collect.':'Fully paid.')+'</p></div>';
+  return '<div class="next"><p class="k">Lost</p></div>';
+}
+const intlNo=p=>{let d=String(p||'').replace(/[^\d+]/g,'');if(d.replace(/\D/g,'').length<7)return '';if(d.charAt(0)==='+')return d.slice(1).replace(/\D/g,'');d=d.replace(/\D/g,'');if(d.slice(0,2)==='00')return d.slice(2);if(d.charAt(0)==='0')return '44'+d.slice(1);return d};
+function phoneLinks(c){const ph=c.phone||'',n=intlNo(ph);if(!ph||ph.charAt(0)==='['||!n)return '<span class="muted">'+esc(ph||'Not added yet')+'</span>';
+  return '<span class="clinks"><a class="clink" href="tel:+'+n+'" aria-label="Call '+esc(c.name)+' on '+esc(ph)+'">'+ico('phone','s')+esc(ph)+'</a>'+
+   '<a class="clink wa" href="https://wa.me/'+n+'?text='+encodeURIComponent('Hello '+greetN(c)+', ')+'" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp '+esc(c.name)+' (opens WhatsApp)">'+ico('chat','s')+'WhatsApp</a></span>'}
+function emailLinks(c){const em=c.email||'';if(!em||em.charAt(0)==='['||em.indexOf('@')<1)return '<span class="muted">'+esc(em||'Not added yet')+'</span>';
+  return '<span class="clinks"><a class="clink" href="mailto:'+encodeURIComponent(em).replace(/%40/g,'@')+'" aria-label="Email '+esc(c.name)+' with your email app">'+ico('mail','s')+esc(em)+'</a>'+
+   '</span>'}
+function formPane(b){const f=b.form;if(!f)return '';const c=cust(b.cid);
+  const row=(k,v)=>v?'<dt>'+k+'</dt><dd>'+esc(v)+'</dd>':'';
+  return '<div class="blk"><h3 class="sec">What they told us on the website form</h3><div class="pane">'+(f.msg?'<blockquote class="said">“'+esc(f.msg)+'”</blockquote>':'')+
+   '<dl class="kv" style="margin:14px 0 0;grid-template-columns:minmax(100px,36%) minmax(0,1fr)">'+row('Reply by',f.contactBy)+'<dt>Phone or WhatsApp</dt><dd>'+phoneLinks(c)+'</dd><dt>Email</dt><dd>'+emailLinks(c)+'</dd>'+row('Partner or co-host',f.partner)+row('Event',b.type+(f.flex?', date flexible':''))+row('Venue',b.venue)+row('Venue booked?',f.booked)+row('Guests',f.guestsBand||String(b.guests))+row('Budget they gave',f.budget)+row('Style or colours',f.style)+row('Inspiration',f.link)+row('Asked for a meeting',f.meet?f.meet.how+', '+fmt(f.meet.day)+', '+f.meet.time.toLowerCase():'')+row('Heard about us',f.heard)+'</dl>'+
+   (f.services.length?'<p class="lab" style="margin-top:14px">They are interested in</p><p style="margin-top:6px">'+f.services.map(x=>'<span class="pill gold" style="margin:0 6px 6px 0">'+esc(x)+'</span>').join('')+'</p>':'')+
+   '<p class="muted small" style="margin-top:8px">'+(f.consent?'Agreed to be contacted about this enquiry. ':'')+'Received '+fmt(b.rec)+'. Sample answers for the demo.</p></div></div>'}
+function sBooking(b){
+  const c=cust(b.cid),its=Object.keys(b.items),sh=shortOf(b);
+  const mon=hasMoney(b)?'<div class="blk"><h3 class="sec">Money'+(smp(b)?' · sample amounts':'')+'</h3>'+(smp(b)?'<p class="muted small" style="margin:-4px 0 10px">These figures are invented for the demo. They are not Saino prices.</p>':'')+'<div class="pane"><div class="money"><div><b>'+money(tot(b))+'</b><span>Total</span></div><div><b>'+money(paid(b))+'</b><span>Paid</span></div><div><b>'+money(bal(b))+'</b><span>Balance</span></div></div><div class="meter" aria-hidden="true" style="margin:6px 0 10px"><u style="display:block;width:'+Math.min(100,paid(b)/tot(b)*100)+'%"></u></div><p>'+payPill(b)+(bal(b)>0?' <span class="muted small">Balance due '+fmt(balDue(b))+', a week before the event.</span>':'')+'</p>'+(b.reqs?'<p class="muted small">Balance requested '+b.reqs+'×, last '+fmt(b.lastReq)+'.</p>':'')+
+    (b.pay.length?'<div style="margin-top:8px">'+b.pay.map(p=>'<div class="row"><div class="g"><div class="t">'+money(p.a)+' · '+esc(p.m)+'</div><div class="s muted small">'+fmt(p.d)+(p.n?' · '+esc(p.n):'')+'</div></div></div>').join('')+'</div>':'<p class="muted small">No payments yet.</p>')+
+    '<div class="acts-row" style="margin-top:10px"><button class="btn sm" type="button" data-a="open" data-k="pay" data-id="'+b.id+'">Record payment</button>'+(bal(b)>0?'<button class="btn sm pri" type="button" data-a="open" data-k="bal" data-id="'+b.id+'">Request balance</button>':'')+'</div></div></div>':'';
+  const rev=b.rev?'<div class="blk"><h3 class="sec">Google review</h3><div class="pane"><p>'+revPill(b)+'</p><p class="muted small" style="margin:6px 0 10px">'+(b.rev.recv?'Received '+fmt(b.rev.recv)+'.':!b.rev.sent?'The request goes out automatically on '+fmt(b.rev.due)+'.':'Request sent '+fmt(b.rev.last||b.rev.sent)+(b.rev.n?', reminded '+b.rev.n+'×':'')+'.')+'</p>'+(b.rev.recv?'':'<div class="acts-row"><button class="btn sm" type="button" data-a="open" data-k="rev" data-id="'+b.id+'">'+(b.rev.sent?'Send again':'Send now')+'</button>'+(b.rev.sent?'<button class="btn sm pri" type="button" data-a="recv" data-id="'+b.id+'">Mark as received</button>':'')+'</div>')+'</div></div>':'';
+  const lost=['New enquiry','Meeting booked','Quote sent'].includes(b.stage)?(lostAsk?'<div class="pane" style="margin-top:22px"><p style="font-weight:600">Mark this enquiry as lost?</p><p class="muted small">It leaves your lists. The history stays.</p><div class="acts-row" style="margin-top:10px"><button class="btn sm pri" type="button" data-a="lost" data-id="'+b.id+'">Yes, mark as lost</button><button class="btn sm" type="button" data-a="lostno">Keep it</button></div></div>':'<div style="margin-top:22px"><button class="btn quiet sm" type="button" data-a="lostask">Mark as lost</button></div>'):'';
+  return '<p class="eyebrow">'+esc(b.type)+'</p><h2 class="ttl" tabindex="-1" id="sh-t">'+esc(c.name)+'</h2><p>'+stagePill(b.stage)+' <span class="muted">'+fmt(b.date)+' · '+esc(b.venue)+' · '+b.guests+' guests</span></p><p style="margin-top:6px"><button class="link" type="button" data-a="open" data-k="edit" data-id="'+b.id+'">Edit date, venue or guests</button></p>'+
+   '<div class="blk">'+railHTML(b,true)+'</div><div class="blk">'+nextCard(b)+'</div>'+formPane(b)+mon+rev+
+   '<div class="blk"><h3 class="sec">Decor for this event</h3>'+(its.length?'<div class="pane">'+its.map(k=>'<div class="row"><div class="g">'+esc(item(k).name)+'</div><b>'+b.items[k]+'</b>'+(sh.includes(k)?'<span class="pill bad">Short</span>':'')+'</div>').join('')+'</div>':'<p class="muted">Nothing chosen yet. You pick the decor when you prepare the quote.</p>')+'</div>'+
+   '<div class="blk"><h3 class="sec">Customer</h3><div class="pane"><dl class="kv" style="margin:0"><dt>Phone</dt><dd>'+phoneLinks(c)+'</dd><dt>Email</dt><dd>'+emailLinks(c)+'</dd><dt>Came from</dt><dd>'+esc(b.src)+'</dd></dl><div class="acts-row" style="margin-top:10px"><button class="btn sm" type="button" data-a="open" data-k="msg" data-id="'+b.id+'">Send a message</button><button class="btn sm" type="button" data-a="open" data-k="cedit" data-id="'+c.id+'">Edit contact</button></div><div class="field" style="margin:12px 0 0"><label for="cnote">Notes</label><textarea id="cnote" data-cid="'+c.id+'">'+esc(c.notes)+'</textarea></div></div></div>'+
+   dayPane(b)+gPane(b)+'<div class="blk"><h3 class="sec">What happened</h3><ul class="log">'+b.log.slice().reverse().map(x=>'<li><time>'+fmt(x.d)+'</time>'+esc(x.t)+'</li>').join('')+'</ul></div>'+lost;
+}
+function sAppt(b){const c=cust(b.cid),f=b.form,pm=f&&f.meet;
+  const T={Morning:'10:00',Afternoon:'14:00',Evening:'18:00',Weekend:'11:00'};
+  const dDate=pm&&pm.day>=TODAY?pm.day:addDays(TODAY,3),dTime=pm&&T[pm.time]||'11:00';
+  const dVia=f&&['Phone call','Email','WhatsApp'].includes(f.contactBy)?f.contactBy:'Phone call';
+  const dPlace=pm?({'Video call':'Video call','Phone call':'Phone call','In person':'At the venue'}[pm.how]||'At the venue'):'At the venue';
+  const sel=(arr,v)=>arr.map(o=>'<option'+(o===v?' selected':'')+'>'+o+'</option>').join('');
+  return '<p class="eyebrow">Step 1</p><h2 class="ttl" tabindex="-1" id="sh-t">Book a meeting with '+esc(c.name)+'</h2><p class="muted">Saving it moves this enquiry on to “Meeting booked”.</p>'+(pm?'<div class="okbox" style="margin-top:12px">'+esc(first(c))+' asked for a '+esc(pm.how.toLowerCase())+' on '+fmt(pm.day)+', '+esc(pm.time.toLowerCase())+'. It is filled in below. Change it if you need to.</div>':'')+'<form id="af" data-id="'+b.id+'" style="margin-top:18px">'+
+  '<div class="field"><label for="av">How did you reach them?</label><select id="av">'+sel(['Phone call','WhatsApp','Email'],dVia)+'</select></div>'+
+  '<div class="field"><label for="ad">Meeting date</label><input id="ad" type="date" required value="'+dDate+'" min="'+TODAY+'"></div>'+
+  '<div class="field"><label for="at">Time</label><input id="at" type="time" required value="'+dTime+'"></div>'+
+  '<div class="field"><label for="ap">Where</label><select id="ap">'+sel(['At the venue','Video call','Phone call','At our studio'],dPlace)+'</select></div>'+
+  '<div class="stick"><p class="muted small">In the live system the client would get a confirmation by email. Here nothing is sent.</p><div class="acts-row"><button class="btn pri" type="submit">Save meeting</button><button class="btn" type="button" data-a="close">Cancel</button></div></div></form>'}
+function qOk(b){return !!(b.draft&&+b.draft.total>0&&Object.keys(b.items).length>0)}
+function sQuote(b){const c=cust(b.cid);b.draft=b.draft||{total:'',valid:14,msg:'Thank you for meeting us. Here is our quote for your '+lc(b.type)+'. Please read it and accept it online if you are happy.'};
+  const uu=usage(b.date),ob=Object.keys(b.items).filter(k=>uu[k].conf+uu[k].held+b.items[k]>avail(item(k)));
+  const lines=Object.keys(b.items).map(k=>'<div class="qline"><span>'+esc(item(k).name)+(ob.includes(k)?' <span class="pill bad">Short</span>':'')+'</span><input type="number" min="1" value="'+b.items[k]+'" data-qty="'+k+'" aria-label="Quantity of '+esc(item(k).name)+'"><button class="ib" type="button" data-a="rm" data-k="'+k+'" aria-label="Remove '+esc(item(k).name)+'">'+ico('x','s')+'</button></div>').join('');
+  return '<p class="eyebrow">Step 2 · Quote</p><h2 class="ttl" tabindex="-1" id="sh-t">Quote for '+esc(c.name)+'</h2><p class="muted">'+esc(b.type)+' · '+fmt(b.date)+' · '+esc(b.venue)+' · '+b.guests+' guests. These details come from the enquiry.</p>'+
+  '<div class="blk"><h3 class="sec">Decor included</h3>'+(lines||'<p class="muted" style="margin-bottom:8px">Add the items you agreed at the meeting.</p>')+'<div class="field"><label class="sr" for="qadd">Add an item</label><select id="qadd"><option value="">Add an item…</option>'+ITEMS.filter(i=>!(i.id in b.items)).map(i=>'<option value="'+i.id+'">'+esc(i.name)+'</option>').join('')+'</select></div></div>'+
+  '<div class="blk"><div class="field"><label for="qtot">Agreed price (£)</label><input id="qtot" type="number" min="0" step="1" inputmode="numeric" placeholder="Type the total you agreed" value="'+esc(b.draft.total)+'"><span class="muted small">You type the price. The demo never suggests one.</span></div>'+
+  '<div class="field"><label for="qmsg">Message to the client</label><textarea id="qmsg">'+esc(b.draft.msg)+'</textarea></div>'+
+  '<div class="field"><label for="qval">Quote is valid for</label><select id="qval">'+[7,14,30].map(n=>'<option value="'+n+'"'+(+b.draft.valid===n?' selected':'')+'>'+n+' days</option>').join('')+'</select><span class="muted small">Terms and payment wording: [to come from Sajjan and Deepan].</span></div></div>'+
+  (ob.length?'<div class="warnbox">Some items are short on that date. You can still send the quote, but check stock first.</div>':'')+
+  '<div class="stick"><p class="muted small" id="qhelp">'+(qOk(b)?'Ready to send.':'Add at least one item and type the agreed price to send.')+'</p><div class="acts-row"><button class="btn" type="button" data-a="preview" data-id="'+b.id+'">Preview</button><button class="btn pri" id="sendq" type="button" data-a="sendq" data-id="'+b.id+'"'+(qOk(b)?'':' aria-disabled="true"')+'>Send quote online</button></div></div>'}
+function sPay(b){return '<p class="eyebrow">Payment</p><h2 class="ttl" tabindex="-1" id="sh-t">Record a payment</h2><p class="muted">'+esc(cust(b.cid).name)+' · balance '+money(bal(b))+'</p><form id="pf" data-id="'+b.id+'" style="margin-top:18px">'+
+  '<div class="field"><label for="pa">Amount (£)</label><input id="pa" type="number" min="0.01" step="0.01" inputmode="decimal" required value="'+(bal(b)||'')+'" aria-describedby="paerr"><p id="paerr" class="warnbox" role="alert" hidden></p></div>'+
+  '<div class="field"><label for="pm">How they paid</label><select id="pm"><option>Bank transfer</option><option>Cash</option><option>Online payment</option></select></div>'+
+  '<div class="field"><label for="pd">Date received</label><input id="pd" type="date" required value="'+TODAY+'"></div>'+
+  '<div class="field"><label for="pn">Note (optional)</label><input id="pn" placeholder="Deposit, balance, second payment"></div>'+
+  '<div class="stick"><div class="acts-row"><button class="btn pri" type="submit">Save payment</button><button class="btn" type="button" data-a="close">Cancel</button></div></div></form>'}
+function sEdit(b){return '<p class="eyebrow">Edit</p><h2 class="ttl" tabindex="-1" id="sh-t">Event details</h2><p class="muted">'+esc(cust(b.cid).name)+'. Changing the date changes which stock is checked.</p><form id="ef" data-id="'+b.id+'" style="margin-top:18px">'+
+  '<div class="field"><label for="et">Event type</label><select id="et">'+TYPES.map(t=>'<option'+(t===b.type?' selected':'')+'>'+t+'</option>').join('')+'</select></div>'+
+  '<div class="field"><label for="ed">Event date</label><input id="ed" type="date" required value="'+b.date+'"'+(b.stage==='Completed'?'':' min="'+TODAY+'"')+'></div>'+
+  '<div class="field"><label for="ev">Venue</label><input id="ev" value="'+esc(b.venue)+'"></div>'+
+  '<div class="field"><label for="eg">Guests</label><input id="eg" type="number" min="1" value="'+b.guests+'"></div>'+
+  '<div class="stick"><div class="acts-row"><button class="btn pri" type="submit">Save changes</button><button class="btn" type="button" data-a="close">Cancel</button></div></div></form>'}
+function sMsg(b,mode){const isB=mode==='bal';
+  return '<p class="eyebrow">'+(isB?'Balance':mode==='msg'?'Message':'Google review')+'</p><h2 class="ttl" tabindex="-1" id="sh-t">'+(isB?'Ask for '+money(bal(b)):mode==='msg'?'Message '+esc(cust(b.cid).name):(b.rev.sent?'Ask again':'Send the review request'))+'</h2><p class="muted">'+esc(cust(b.cid).name)+' · '+esc(b.type)+' on '+fmt(b.date)+'</p>'+
+  '<div class="blk"><div class="field"><label for="mch">Send by</label><select id="mch"><option'+(M.ch==='WhatsApp'?' selected':'')+'>WhatsApp</option><option'+(M.ch==='Email'?' selected':'')+'>Email</option></select></div>'+
+  '<div class="field"><label for="mtx">Message (you can edit it)</label><textarea id="mtx" style="min-height:200px">'+esc(M.text)+'</textarea></div></div>'+
+  '<div class="stick"><p class="muted small">'+(isB&&smp(b)?'The amount is a sample figure, not a Saino price. ':'')+(mode==='rev'?'The link is a placeholder: [Google review link]. ':'')+'In the live system this goes out from here. In this demo nothing is sent. It is only recorded.</p>'+
+  '<div class="acts-row"><button class="btn pri" type="button" data-a="sendmsg" data-k="'+mode+'" data-id="'+b.id+'">Send</button><button class="btn" type="button" data-a="copy">Copy message</button><button class="btn quiet" type="button" data-a="close">Cancel</button></div></div>'}
+function sCust(c){const bs=S.b.filter(b=>b.cid===c.id).sort((a,b)=>b.date.localeCompare(a.date));
+  return '<p class="eyebrow">Customer</p><h2 class="ttl" tabindex="-1" id="sh-t">'+esc(c.name)+'</h2>'+(bs.length>1?'<span class="pill gold">Repeat customer</span>':'')+
+  '<div class="blk"><div class="pane"><dl class="kv" style="margin:0"><dt>Phone</dt><dd>'+phoneLinks(c)+'</dd><dt>Email</dt><dd>'+emailLinks(c)+'</dd></dl><div class="acts-row" style="margin-top:10px"><button class="btn sm" type="button" data-a="open" data-k="cedit" data-id="'+c.id+'">Edit contact</button></div></div></div>'+
+  '<div class="blk"><h3 class="sec">Their events</h3><div class="pane">'+bs.map(b=>'<div class="row">'+dateBox(b.date)+'<div class="g"><div class="t">'+esc(b.type)+'</div><div class="s muted small">'+esc(b.venue)+'</div></div>'+stagePill(b.stage)+'<button class="btn sm" type="button" data-a="open" data-k="b" data-id="'+b.id+'" data-back="c:'+c.id+'">Open</button></div>').join('')+'</div></div>'+
+  '<div class="blk"><div class="field"><label for="cnote">Notes</label><textarea id="cnote" data-cid="'+c.id+'">'+esc(c.notes)+'</textarea><span class="muted small">Saved in this browser while you try the demo.</span></div></div>'}
+function sItem(it){const bs=S.b.filter(b=>b.items[it.id]&&live(b)).sort((a,b)=>a.date.localeCompare(b.date));
+  return '<p class="eyebrow">'+it.cat+'</p><h2 class="ttl" tabindex="-1" id="sh-t">'+esc(it.name)+'</h2><span class="pill '+(it.cond==='Good'?'ok':'warn')+'">'+it.cond+'</span>'+
+  '<div class="blk"><div class="pane"><dl class="kv" style="margin:0"><dt>You own</dt><dd>'+it.total+'</dd><dt>In repair</dt><dd>'+(it.rep||0)+'</dd><dt>Can be booked</dt><dd>'+avail(it)+'</dd></dl><div class="acts-row" style="margin-top:10px"><button class="btn sm" type="button" data-a="open" data-k="iedit" data-id="'+it.id+'">Edit item</button></div></div></div><div class="blk"><h3 class="sec">Upcoming use</h3>'+(bs.length?'<div class="pane">'+bs.map(b=>'<div class="row">'+dateBox(b.date)+'<div class="g"><div class="t">'+esc(cust(b.cid).name)+'</div><div class="s muted small">'+b.stage+'</div></div><b>'+b.items[it.id]+'</b></div>').join('')+'</div>':'<p class="muted">Not booked yet.</p>')+'</div>'}
+function sNew(pre){return '<p class="eyebrow">Add</p><h2 class="ttl" tabindex="-1" id="sh-t">New enquiry</h2><p class="muted">Just the basics. You can add the rest later.</p><form id="nf" style="margin-top:18px">'+
+  '<div class="field"><label for="nn">Name</label><input id="nn" required placeholder="For example Maya and Arjun" autocomplete="off"></div>'+
+  '<div class="field"><label for="np">Phone or WhatsApp (optional)</label><input id="np" type="tel" placeholder="+44 …"></div><div class="field"><label for="nm">Email (optional)</label><input id="nm" type="email"></div><div class="field"><label for="nt">Event type</label><select id="nt">'+TYPES.map(t=>'<option>'+t+'</option>').join('')+'</select></div>'+
+  '<div class="field"><label for="nd">Event date</label><input id="nd" type="date" required min="'+TODAY+'" value="'+(pre||'')+'"></div>'+
+  '<div class="field"><label for="nv">Venue</label><input id="nv" placeholder="Not chosen yet"></div>'+
+  '<div class="field"><label for="ng">Guests</label><input id="ng" type="number" min="1" value="100"></div>'+
+  '<div class="field"><label for="ns">Where did it come from?</label><select id="ns">'+SOURCES.map(t=>'<option>'+t+'</option>').join('')+'</select></div>'+
+  '<div class="stick"><div class="acts-row"><button class="btn pri" type="submit">Add enquiry</button><button class="btn" type="button" data-a="close">Cancel</button></div></div></form>'}
+function resHTML(v){v=(v||'').trim().toLowerCase();if(!v)return '<p class="muted small" style="margin-top:6px">Type a name, venue, event type, or something they wrote on the website form.</p>';
+  const r=S.b.filter(b=>norm(cust(b.cid).name+' '+b.venue+' '+b.type+' '+b.src+' '+b.stage+(b.form?' '+[b.form.partner,b.form.msg,b.form.style,b.form.heard,b.form.budget,b.form.services.join(' ')].join(' '):'')).includes(norm(v))).slice(0,12);
+  return r.length?r.map(b=>'<button class="row" type="button" data-a="open" data-k="b" data-id="'+b.id+'">'+dateBox(b.date)+'<span class="g"><span class="t" style="display:block">'+esc(cust(b.cid).name)+'</span><span class="muted small" style="display:block">'+esc(b.type)+' · '+esc(b.venue)+'</span></span>'+stagePill(b.stage)+'</button>').join(''):'<p class="muted" style="margin-top:6px">Nothing found.</p>'}
+function sSearch(){return '<p class="eyebrow">Find</p><h2 class="ttl" tabindex="-1" id="sh-t">Search</h2><div class="field" style="margin-top:14px"><label for="sq">Customer, venue, event type or form answer</label><input id="sq" type="search" autocomplete="off" placeholder="For example Aldershot"></div><div class="sres" id="sres">'+resHTML('')+'</div>'}
+function sCEdit(c){const clean=v=>v&&v.charAt(0)==='['?'':v;
+  return '<p class="eyebrow">Customer</p><h2 class="ttl" tabindex="-1" id="sh-t">Edit contact</h2><p class="muted">'+esc(c.name)+'</p><form id="cf" data-id="'+c.id+'" style="margin-top:18px">'+
+  '<div class="field"><label for="cn">Name</label><input id="cn" required value="'+esc(c.name)+'"></div>'+
+  '<div class="field"><label for="cp">Phone or WhatsApp</label><input id="cp" type="tel" value="'+esc(clean(c.phone))+'"></div>'+
+  '<div class="field"><label for="ce">Email</label><input id="ce" type="email" value="'+esc(clean(c.email))+'"></div>'+
+  '<div class="stick"><p class="muted small">Saved in this browser while you try the demo.</p><div class="acts-row"><button class="btn pri" type="submit">Save contact</button><button class="btn" type="button" data-a="close">Cancel</button></div></div></form>'}
+function sIEdit(it){const cats=[...new Set(ITEMS.map(i=>i.cat))],v=it||{name:'',cat:cats[0],total:1,rep:0};
+  return '<p class="eyebrow">Stock</p><h2 class="ttl" tabindex="-1" id="sh-t">'+(it?'Edit item':'Add an item')+'</h2><p class="muted">'+(it?esc(it.name):'Add something Saino owns, so it can be put on quotes and checked by date.')+'</p><form id="if" data-id="'+(it?it.id:'')+'" style="margin-top:18px">'+
+  '<div class="field"><label for="in">Name</label><input id="in" required value="'+esc(v.name)+'" placeholder="For example Gold candelabra"></div>'+
+  '<div class="field"><label for="ic">Type of decor</label><select id="ic">'+cats.map(c=>'<option'+(c===v.cat?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select></div>'+
+  '<div class="field"><label for="iq">How many you own</label><input id="iq" type="number" min="1" step="1" required value="'+v.total+'"></div>'+
+  '<div class="field"><label for="ir">How many are in repair</label><input id="ir" type="number" min="0" step="1" required value="'+(v.rep||0)+'"><span class="muted small">Items in repair are not counted as free.</span></div>'+
+  '<div class="stick"><p class="muted small">Sample stock list. Saved in this browser while you try the demo.</p><div class="acts-row"><button class="btn pri" type="submit">'+(it?'Save item':'Add item')+'</button><button class="btn" type="button" data-a="close">Cancel</button></div></div></form>'}
+const gmailUrl=em=>'https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(em);
+const outlookUrl=em=>'https://outlook.live.com/mail/0/deeplink/compose?to='+encodeURIComponent(em);
+function sMailWeb(){const em=mailAlt||'';
+  return '<p class="eyebrow">Email</p><h2 class="ttl" tabindex="-1" id="sh-t">Write the email in your browser</h2><p class="muted">No email app opened on this device. Choose where to write to '+esc(em)+'.</p>'+
+  '<div class="stack" style="margin-top:16px"><a class="btn pri" style="width:100%" href="'+esc(gmailUrl(em))+'" target="_blank" rel="noopener noreferrer">Open Gmail</a><a class="btn" style="width:100%" href="'+esc(outlookUrl(em))+'" target="_blank" rel="noopener noreferrer">Open Outlook.com</a><button class="btn" style="width:100%" type="button" data-a="copyaddr">Copy the address</button></div>'+
+  '<p class="muted small" style="margin-top:12px">Tip: set up an email app on this device (or tell the browser to use Gmail for email links) and the address will open there directly.</p>'+
+  '<div class="blk"><button class="btn quiet" type="button" data-a="close">Close</button></div>'}
+function sDemo(){const th=localStorage.getItem(TKEY)||'auto';
+  return '<p class="eyebrow">For the demo</p><h2 class="ttl" tabindex="-1" id="sh-t">Demo controls</h2><p class="muted">These are only here so you can show how the system behaves over time.</p>'+
+  '<div class="blk"><h3 class="sec">Pretend today is</h3><p style="font:600 26px/1.2 var(--display)">'+fmtLong(TODAY)+'</p><div class="acts-row" style="margin-top:10px"><button class="btn sm" type="button" data-a="clock" data-n="1">+1 day</button><button class="btn sm" type="button" data-a="clock" data-n="7">+7 days</button></div><p class="muted small" style="margin-top:8px">Move forward to see events finish by themselves and review requests go out. Moving forward cannot be undone; use Start again below to go back.</p></div>'+
+  '<div class="blk"><h3 class="sec">Look</h3><div class="seg" role="group" aria-label="Colour theme">'+[['auto','Match my device'],['light','Light'],['dark','Dark']].map(([k,l])=>'<button type="button" data-a="theme" data-t="'+k+'" aria-pressed="'+(th===k)+'">'+l+'</button>').join('')+'</div></div>'+
+  '<div class="blk"><h3 class="sec">Google Calendar and Contacts</h3><p class="muted small" style="margin-bottom:10px">Preview of how every booking and customer would reach Google.</p><button class="btn" type="button" data-a="open" data-k="google">Open the Google preview</button></div>'+
+  '<div class="blk"><h3 class="sec">Website form</h3><p class="muted small" style="margin-bottom:10px">Show what happens when a client fills in the form on the Saino website.</p><button class="btn" type="button" data-a="simform">Simulate a website enquiry</button></div>'+
+  '<div class="blk"><h3 class="sec">Start again</h3>'+(resetAsk?'<div class="pane"><p style="font-weight:600">Start again from '+fmtLong(START)+'?</p><p class="muted small">This clears everything you have added or changed in this demo and puts the sample data back.</p><div class="acts-row" style="margin-top:10px"><button class="btn sm pri" type="button" data-a="reset">Yes, start again</button><button class="btn sm" type="button" data-a="resetno">Cancel</button></div></div>':'<p class="muted small" style="margin-bottom:10px">Puts the date back to '+fmtLong(START)+' and clears everything you have added or changed.</p><button class="btn" type="button" data-a="resetask">Start again</button>')+'</div>'+
+  '<div class="blk"><button class="btn" type="button" data-a="close">Done</button></div>'}
+function drawSheet(){
+  const R=$('#sheet-root');if(!sheet){R.innerHTML='';lastKey='';return}
+  const key=sheet.k+':'+sheet.id,k=sheet.k,b=book(sheet.id);let h='';
+  if(k==='b'&&b)h=sBooking(b);else if(k==='appt'&&b)h=sAppt(b);else if(k==='quote'&&b)h=sQuote(b);else if(k==='pay'&&b)h=sPay(b);else if(k==='edit'&&b)h=sEdit(b);
+  else if((k==='bal'||k==='rev'||k==='msg')&&b&&M)h=sMsg(b,k);else if(k==='c'&&cust(sheet.id))h=sCust(cust(sheet.id));else if(k==='i'&&item(sheet.id))h=sItem(item(sheet.id));
+  else if(k==='day'&&b)h=sDay(b);else if(k==='pack'&&b)h=sPack(b);else if(k==='more')h=sMore();else if(k==='mailweb')h=sMailWeb();else if(k==='cedit'&&cust(sheet.id))h=sCEdit(cust(sheet.id));else if(k==='iedit')h=sIEdit(sheet.id?item(sheet.id):null);else if(k==='google')h=sGoogle();else if(k==='new')h=sNew(sheet.pre);else if(k==='search')h=sSearch();else if(k==='demo')h=sDemo();else{sheet=null;R.innerHTML='';return}
+  const old=R.querySelector('.sheet'),st=old&&key===lastKey?old.scrollTop:0,fid=document.activeElement&&document.activeElement.id;
+  R.innerHTML='<div class="scrim" data-a="close"></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t"><button class="ib x" type="button" data-a="close" aria-label="Close">'+ico('x')+'</button>'+h+'</div>';
+  const sh=R.querySelector('.sheet');
+  if(key!==lastKey){const f=sh.querySelector('form input,form select,#sq');((f&&(k==='new'||k==='search'))?f:sh.querySelector('#sh-t')).focus({preventScroll:true})}
+  else{sh.scrollTop=st;if(fid){const e=document.getElementById(fid);if(e&&sh.contains(e))e.focus({preventScroll:true})}}
+  lastKey=key;dateHints(R);
+}
+function drawClient(){
+  const R=$('#client-root');if(!clientView){R.innerHTML='';return}
+  if(clientView.doc){drawDoc(R);return}
+  const b=book(clientView.id),c=cust(b.cid),q=clientView.sent?b.quote:b.draft;
+  const total=q&&q.total?money(q.total):'To be agreed',acc=clientView.sent&&b.quote.state==='accepted';
+  R.innerHTML='<div class="client" role="dialog" aria-modal="true" aria-labelledby="cl-t"><div class="ban"><span>'+(clientView.sent?(smp(b)?'Sample quote for the demo. The price is invented, not a Saino price. This is the page '+esc(first(c))+' would open from the link in their email.':'Demo: this is the page '+esc(first(c))+' would open from the link in their email. The price is the one you typed.'):'Preview only. The client has not received this.')+'</span><button class="btn" type="button" data-a="closeclient">Back to Saino Studio</button></div>'+
+  '<article class="qdoc"><p class="eyebrow">Saino Events · Wedding and event decor, Aldershot</p><h1 id="cl-t" tabindex="-1">Quote for '+esc(c.name)+'</h1><p class="muted">'+(clientView.sent?'Reference '+esc(b.quote.ref)+' · ':'Draft · ')+esc(b.type)+' · '+fmt(b.date)+' · '+esc(b.venue)+'</p>'+
+  '<p style="margin-top:16px">'+esc((q&&q.msg)||'Thank you for meeting us.')+'</p><table style="margin-top:16px"><caption class="sr">What is included</caption><thead><tr><th>Decor</th><th class="num">Quantity</th></tr></thead><tbody>'+Object.keys(b.items).map(k=>'<tr><td>'+esc(item(k).name)+'</td><td class="num">'+b.items[k]+'</td></tr>').join('')+'</tbody></table>'+
+  '<div class="tot"><span>Total</span><span>'+total+'</span></div>'+(clientView.sent&&smp(b)?'<p class="small" style="margin-top:6px;font-weight:600;color:var(--goldt)">Sample price for the demo, not a Saino price.</p>':'')+'<p class="muted small" style="margin-top:12px">Valid for '+((q&&q.valid)||14)+' days. Terms and payment: [wording to come from Sajjan and Deepan].</p>'+
+  (acc?'<p class="okbox" style="margin-top:20px">You accepted this quote on '+fmt(b.quote.acc)+'. Thank you. We will be in touch to plan the day.</p>':clientView.sent&&qExp(b)?'<p class="warnbox" style="margin-top:20px">This quote has expired. It was valid until '+fmt(qUntil(b))+'. Please contact Saino Events for an up-to-date quote.</p>':clientView.sent?'<div class="acts-row" style="margin-top:22px"><button class="btn pri" type="button" data-a="accept" data-id="'+b.id+'">Accept this quote</button><button class="btn" type="button" data-a="closeclient">Ask a question</button></div><p class="muted small" style="margin-top:10px">Pressing accept confirms your booking with Saino Events.</p>':'<p class="muted small" style="margin-top:20px">The Accept button appears here once the quote is sent.</p>')+'</article></div>';
+  if(clientView.fresh){R.querySelector('#cl-t').focus({preventScroll:true});clientView.fresh=false}
+}
+
+/* ================= render + events ================= */
+function dateHints(root){root.querySelectorAll('input[type=date]').forEach(i=>{let h=i.nextElementSibling;if(!h||!h.classList.contains('datehint')){h=document.createElement('span');h.className='datehint muted small';h.setAttribute('aria-hidden','true');i.after(h)}h.textContent=i.value?fmtLong(i.value):''})}
+function render(){
+  if(!S.items)S.items=JSON.parse(JSON.stringify(ITEMS0));ITEMS=S.items;
+  tick();gsync();drawNav();
+  const fm=document.activeElement&&document.activeElement.id==='q'?document.activeElement.selectionStart:null;
+  $('#main').innerHTML=VIEWS[view]();
+  if(fm!==null){const n=$('#q');n.focus();n.setSelectionRange(fm,fm)}
+  drawSheet();drawClient();
+  const sh=!!sheet,cl=!!clientView;document.body.classList.toggle('print-doc',!!(clientView&&clientView.doc));
+  ['#shell','#tabbar'].forEach(s=>{$(s).inert=sh||cl});$('#sheet-root').inert=cl;
+  document.body.style.overflow=sh||cl?'hidden':'';
+  dateHints(document);
+  save();
+}
+function go(v){clearToast();view=v;try{history.replaceState(null,'','#'+v)}catch(e){}sheet=null;clientView=null;render();window.scrollTo(0,0);$('#main').focus({preventScroll:true})}
+function setTheme(t){const r=document.documentElement;if(t==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',t);try{localStorage.setItem(TKEY,t)}catch(e){}}
+setTheme(localStorage.getItem(TKEY)||'auto');
+document.addEventListener('click',e=>{
+  const ml=e.target.closest('a[href^="mailto:"]');
+  if(ml){const em=decodeURIComponent(ml.getAttribute('href').slice(7));let left=false;const mark=()=>{left=true};
+    window.addEventListener('blur',mark,{once:true});document.addEventListener('visibilitychange',mark,{once:true});
+    try{navigator.clipboard.writeText(em).catch(()=>{})}catch(x){}
+    toast('Opening your email app for '+em+'…');
+    setTimeout(()=>{window.removeEventListener('blur',mark);document.removeEventListener('visibilitychange',mark);if(left||document.hidden)return;
+      const w=window.open(gmailUrl(em),'_blank');
+      if(w){try{w.opener=null}catch(x){}toast('No email app opened on this device, so Gmail opened in a new tab. The address is also copied.')}
+      else{mailAlt=em;sheet={k:'mailweb',id:'',back:sheet&&['b','c','day'].includes(sheet.k)?{k:sheet.k,id:sheet.id}:null};render()}},1500);
+    return}
+  const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,id=t.dataset.id,b=id?book(id):null;
+  if(a==='nav')go(t.dataset.v);
+  else if(a==='board'){typeF='All';go('board')}
+  else if(a==='open'){const bk=t.dataset.back?{k:t.dataset.back.split(':')[0],id:t.dataset.back.split(':')[1]}:null;
+    open(t.dataset.k,id,bk||(sheet&&['b','c'].includes(sheet.k)&&t.dataset.k!=='b'&&t.dataset.k!=='c'?{k:sheet.k,id:sheet.id}:null))}
+  else if(a==='close')closeSheet();
+  else if(a==='doc'){clientView={id,doc:t.dataset.t,fresh:true};render()}
+  else if(a==='savedoc'){saveDay(b);log(b,'Event-day sheet saved');clientView={id,doc:'day',fresh:true};render()}
+  else if(a==='print'){window.print()}
+  else if(a==='packall'){const w=t.dataset.t;b.pack=b.pack||{out:{},back:{},issue:{}};Object.keys(b.items).forEach(k=>{b.pack[w][k]=true});log(b,w==='out'?'Everything loaded for the event':'Everything returned from the event');toast(w==='out'?'Everything marked as loaded.':'Everything marked as returned.');render()}
+  else if(a==='rperiod'){repP=t.dataset.t;render()}
+  else if(a==='export'){doExport(t.dataset.t)}
+  else if(a==='copysum'){const tx=weeklyText();try{navigator.clipboard.writeText(tx).then(()=>toast('Summary copied.'),()=>toast('Could not copy. Select the text and copy it.'))}catch(x){toast('Could not copy. Select the text and copy it.')}}
+  else if(a==='gtab'){gtab=t.dataset.t;drawSheet()}
+  else if(a==='gtoggle'){const was=S.g.on,n=gPending();S.g.on=!S.g.on;if(!was)toast(n?'Sync resumed. '+n+(n===1?' change':' changes')+' sent to Google (demo: nothing really sent).':'Sync resumed.');else toast('Sync paused. Changes will wait until you resume.');render()}
+  else if(a==='more'){showAll=!showAll;render()}
+  else if(a==='type'){typeF=t.dataset.t;render()}
+  else if(a==='evmode'){evMode=t.dataset.t;try{localStorage.setItem('saino-crm-v2-inbox-evmode',evMode)}catch(x){}render();const n=document.querySelector('[data-a=evmode][data-t="'+evMode+'"]');n&&n.focus({preventScroll:true})}
+  else if(a==='mtab'){moneyTab=t.dataset.t;render()}
+  else if(a==='cmode'){calMode=t.dataset.t;render()}
+  else if(a==='sel'){selDate=t.dataset.d;render();const d=document.querySelector('.cal .d.sel');d&&d.focus({preventScroll:true})}
+  else if(a==='cal'){cal.m+=+t.dataset.n;if(cal.m<1){cal.m=12;cal.y--}if(cal.m>12){cal.m=1;cal.y++}render()}
+  else if(a==='gocal'){selDate=t.dataset.d;const d=D(selDate);cal={y:d.getFullYear(),m:d.getMonth()+1};calMode='grid';go('calendar')}
+  else if(a==='newfor'){opener=openerSel(document.activeElement);sheet={k:'new',id:'',pre:t.dataset.d};render()}
+  else if(a==='snooze'){b.snooze=addDays(TODAY,2);toast('Okay. This will come back in 2 days.');render()}
+  else if(a==='held'){if(b.appt.when.slice(0,10)>TODAY){toast('You can mark the meeting as held on or after the day.');return}b.appt.done=true;log(b,'Meeting held');toast('Meeting marked as held. Next: send the quote.');render()}
+  else if(a==='lostask'){lostAsk=true;drawSheet()}
+  else if(a==='lostno'){lostAsk=false;drawSheet()}
+  else if(a==='lost'){b.stage='Lost';log(b,'Marked as lost');sheet=null;lostAsk=false;toast('Marked as lost.');render()}
+  else if(a==='rm'){const bb=book(sheet.id);delete bb.items[t.dataset.k];drawSheet()}
+  else if(a==='preview'){clientView={id,sent:false,fresh:true};render()}
+  else if(a==='client'){clientView={id,sent:true,fresh:true};render()}
+  else if(a==='closeclient'){clientView=null;render()}
+  else if(a==='sendq'){if(!qOk(b)){$('#qhelp').textContent='Add at least one item and type the agreed price to send.';return}
+    const n=1010+S.b.filter(x=>x.quote).length;b.quote={ref:'Q-'+n,sent:TODAY,total:+b.draft.total,msg:b.draft.msg,valid:+b.draft.valid,state:'sent'};b.draft=null;b.stage='Quote sent';
+    log(b,'Quote '+b.quote.ref+' sent online (demo: no email is really sent)');sheet={k:'b',id:b.id};toast('Quote sent. It confirms by itself when the client accepts.');clientView={id:b.id,sent:true,fresh:true};render()}
+  else if(a==='accept'){if(qExp(b))return;b.quote.state='accepted';b.quote.acc=TODAY;b.stage='Confirmed';log(b,'Client accepted the quote online. Confirmed automatically and stock reserved.');toast('Accepted. This event is now confirmed.');render()}
+  else if(a==='recv'){b.rev.recv=TODAY;log(b,'Client left a Google review (ticked by Saino)');toast('Marked as received.');render()}
+  else if(a==='copy'){const ta=$('#mtx');try{navigator.clipboard.writeText(ta.value).then(()=>{t.textContent='Copied'},()=>{ta.select();t.textContent='Press Ctrl+C'})}catch(x){ta.select()}}
+  else if(a==='sendmsg'){const k=t.dataset.k,ch=vl(M.ch);
+    if(k==='bal'){b.reqs=(b.reqs||0)+1;b.lastReq=TODAY;log(b,'Balance request for '+money(bal(b))+' sent by '+ch+' (demo: not really sent)');toast('Balance request recorded. Nothing was really sent in this demo.')}
+    else if(k==='msg'){b.replied=TODAY;log(b,'Message sent by '+ch+' (demo: not really sent)');toast('Message recorded. Nothing was really sent in this demo.')}
+    else{const r=b.rev;if(!r.sent){r.sent=TODAY;log(b,'Google review request sent by '+ch+' (demo: not really sent)')}else{r.n=(r.n||0)+1;r.last=TODAY;log(b,'Google review request sent again by '+ch+' (demo: not really sent)')}toast('Review request recorded. Nothing was really sent in this demo.')}
+    sheet={k:'b',id:b.id};M=null;render()}
+  else if(a==='clock'){const n=+t.dataset.n;if(n===0){S=fresh();TODAY=START}else{TODAY=addDays(TODAY,n)}S.today=TODAY;selDate=TODAY;const d=D(TODAY);cal={y:d.getFullYear(),m:d.getMonth()+1};render()}
+  else if(a==='theme'){setTheme(t.dataset.t);drawSheet()}
+  else if(a==='simform'){const nb=simEnquiry();if(!nb){toast('The sample enquiry is already here. Reset to see it arrive again.');return}view='today';try{history.replaceState(null,'','#today')}catch(x){}sheet={k:'b',id:nb.id,back:null};toast('New website enquiry from Anita G. An instant reply went to her and both founders were told (demo: nothing really sent).');render()}
+  else if(a==='copyaddr'){try{navigator.clipboard.writeText(mailAlt).then(()=>toast('Address copied: '+mailAlt),()=>toast('Could not copy. The address is '+mailAlt))}catch(x){toast('The address is '+mailAlt)}}
+  else if(a==='resetask'){resetAsk=true;drawSheet()}
+  else if(a==='resetno'){resetAsk=false;drawSheet()}
+  else if(a==='reset'){resetAsk=false;S=fresh();TODAY=START;selDate=START;cal={y:2026,m:11};toast('Sample data reset.');render()}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){if(clientView){clientView=null;render()}else if(sheet)closeSheet()}
+  if(e.key==='/'&&!sheet&&!clientView&&!/^(INPUT|TEXTAREA|SELECT)$/.test((e.target||{}).tagName||'')){e.preventDefault();open('search')}
+  if(e.key==='Tab'){const root=clientView?$('#client-root'):sheet?$('#sheet-root'):null;if(!root)return;
+    const f=[...root.querySelectorAll('a[href],button:not([disabled]),input,select,textarea,[tabindex="-1"]')].filter(x=>x.offsetParent!==null&&!(x.tabIndex<0&&!x.matches('#sh-t,#cl-t')));
+    if(!f.length)return;const fi=f[0],la=f[f.length-1];
+    if(e.shiftKey&&document.activeElement===fi){e.preventDefault();la.focus()}else if(!e.shiftKey&&document.activeElement===la){e.preventDefault();fi.focus()}}
+});
+document.addEventListener('input',e=>{const t=e.target;
+  if(t.type==='date'){const h=t.nextElementSibling;if(h&&h.classList&&h.classList.contains('datehint'))h.textContent=t.value?fmtLong(t.value):''}
+  if(t.id==='q'){q=t.value;render()}
+  else if(t.id==='sq'){$('#sres').innerHTML=resHTML(t.value)}
+  else if(t.id==='qtot'||t.id==='qmsg'){const b=book(sheet.id);b.draft[t.id==='qtot'?'total':'msg']=t.value;const ok=qOk(b),s=$('#sendq');if(s){ok?s.removeAttribute('aria-disabled'):s.setAttribute('aria-disabled','true')}const hp=$('#qhelp');if(hp)hp.textContent=ok?'Ready to send.':'Add at least one item and type the agreed price to send.'}
+  else if(t.id==='mtx'){M.text=t.value}
+});
+document.addEventListener('change',e=>{const t=e.target;
+  if(t.dataset&&t.dataset.pk){packChange(t);return}
+  if(t.id==='cnote'){cust(t.dataset.cid).notes=t.value;save()}
+  else if(t.id==='qval'){book(sheet.id).draft.valid=t.value;save()}
+  else if(t.id==='qadd'&&t.value){book(sheet.id).items[t.value]=1;drawSheet();const q=$('#qadd');q&&q.focus()}
+  else if(t.dataset.qty){book(sheet.id).items[t.dataset.qty]=Math.max(1,+t.value||1);drawSheet()}
+  else if(t.id==='mch'){M.ch=t.value;const b=book(sheet.id);M.text=sheet.k==='bal'?msgBal(b,t.value):sheet.k==='msg'?msgGen(b,t.value):msgRev(b,t.value);$('#mtx').value=M.text}
+  else if(t.id==='revd'){S.cfg.revDays=+t.value;S.b.forEach(b=>{if(b.rev&&!b.rev.sent)b.rev.due=addDays(b.date,S.cfg.revDays)});render()}
+  else if(t.id==='invd'){invDate=t.value||invDate;render()}
+  else if(t.id==='catf'){catF=t.value;render()}
+  else if(t.id==='evst'){evStage=t.value;render();const n=$('#evst');n&&n.focus()}
+  else if(t.id==='evsort'){evSort=t.value;render();const n=$('#evsort');n&&n.focus()}
+  else if(t.id==='chk'){chk=t.value;render();const n=$('#chk');n&&n.focus()}
+});
+document.addEventListener('submit',e=>{const f=e.target;e.preventDefault();
+  if(f.id==='af'){const b=book(f.dataset.id);b.appt={when:$('#ad').value+'T'+$('#at').value,place:$('#ap').value,via:$('#av').value,done:false};b.stage='Meeting booked';
+    log(b,'Client contacted by '+vl(b.appt.via)+'. Meeting booked for '+fmtWhen(b.appt.when)+' ('+b.appt.place.toLowerCase()+'). Moved on automatically.');sheet={k:'b',id:b.id};toast('Meeting booked. This enquiry moved on by itself.');render()}
+  else if(f.id==='df'){const b=book(f.dataset.id);saveDay(b);log(b,'Event-day sheet saved');sheet={k:'b',id:b.id};toast('Event-day sheet saved.');render()}
+  else if(f.id==='cf'){const c=cust(f.dataset.id),nm=$('#cn').value.trim();if(!nm){const e=$('#cn');e.setCustomValidity('Please type a name.');e.reportValidity();e.addEventListener('input',()=>e.setCustomValidity(''),{once:true});return}c.name=nm;c.phone=$('#cp').value.trim()||'[phone to add]';c.email=$('#ce').value.trim()||'[email to add]';const bk=sheet.back;sheet=bk?{k:bk.k,id:bk.id,back:null}:{k:'c',id:c.id,back:null};toast('Contact saved.');render()}
+  else if(f.id==='if'){const nm=$('#in').value.trim(),tt=Math.max(1,Math.round(+$('#iq').value||1)),rp=Math.max(0,Math.round(+$('#ir').value||0));if(!nm){const e=$('#in');e.setCustomValidity('Please type a name.');e.reportValidity();e.addEventListener('input',()=>e.setCustomValidity(''),{once:true});return}if(rp>tt){const e=$('#ir');e.setCustomValidity('This cannot be more than you own ('+tt+').');e.reportValidity();e.addEventListener('input',()=>e.setCustomValidity(''),{once:true});return}let it=f.dataset.id?item(f.dataset.id):null;const isNew=!it;if(!it){it={id:'it'+Date.now()%100000};ITEMS.push(it)}Object.assign(it,{name:nm,cat:$('#ic').value,total:tt,rep:rp,cond:rp>0?'Needs repair':'Good'});sheet={k:'i',id:it.id,back:null};toast(isNew?'Item added.':'Item saved.');render()}
+  else if(f.id==='pf'){const b=book(f.dataset.id),a=Math.round(+$('#pa').value*100)/100,er=$('#paerr');if(!(a>0))return;if(a>bal(b)+0.001){er.hidden=false;er.textContent=bal(b)>0?'That is more than the balance of '+money(bal(b))+'. Check the amount.':'This booking is already paid in full.';$('#pa').focus();return}b.pay.push({d:$('#pd').value,a,m:$('#pm').value,n:$('#pn').value});
+    log(b,'Payment of '+money(a)+' received ('+$('#pm').value.toLowerCase()+')');if(bal(b)===0)log(b,'Paid in full');sheet={k:'b',id:b.id};toast(bal(b)===0?'Paid in full.':'Payment saved. Balance is now '+money(bal(b))+'.');render()}
+  else if(f.id==='ef'){const b=book(f.dataset.id);b.type=$('#et').value;b.date=$('#ed').value;b.venue=$('#ev').value||'Not chosen';b.guests=+$('#eg').value||b.guests;log(b,'Event details changed ('+fmt(b.date)+', '+b.venue+', '+b.guests+' guests)');sheet={k:'b',id:b.id};toast('Details saved.');render()}
+  else if(f.id==='nf'){const id='cx'+Date.now()%100000,nm=$('#nn').value.trim();if(!nm){const e=$('#nn');e.setCustomValidity('Please type a name.');e.reportValidity();e.addEventListener('input',()=>e.setCustomValidity(''),{once:true});return}
+    S.c.push({id,name:nm,phone:$('#np').value.trim()||'[phone to add]',email:$('#nm').value.trim()||'[email to add]',notes:''});
+    const nb=prep({id:'bx'+Date.now()%100000,cid:id,type:$('#nt').value,date:$('#nd').value,venue:$('#nv').value||'Not chosen',guests:+$('#ng').value||0,stage:'New enquiry',src:$('#ns').value,rec:TODAY});
+    nb.log=[{d:TODAY,t:'Enquiry received from '+$('#ns').value}];S.b.push(nb);sheet=null;toast('Enquiry added. First step: book a meeting.');go('today')}
+});
+window.addEventListener('hashchange',()=>{const v=location.hash.slice(1);if(VIEWS[v]&&v!==view){view=v;sheet=null;clientView=null;render()}});
+if(!VIEWS[view])view='today';
+render();
+</script>
+</body>
+</html>
